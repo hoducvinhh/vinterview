@@ -1,7 +1,28 @@
+import type { Metadata } from 'next';
 import { api } from '@/lib/api';
 import { QuestionCard } from '@/components/ui/QuestionCard';
 import { QuestionFilters } from '@/components/questions/QuestionFilters';
 import { Pagination } from '@/components/questions/Pagination';
+
+export const metadata: Metadata = {
+  title: 'Ngân Hàng Câu Hỏi Phỏng Vấn IT — Sinh Viên & Fresher',
+  description:
+    'Tổng hợp ngân hàng câu hỏi phỏng vấn Lập trình, Cấu trúc dữ liệu, Cơ sở dữ liệu, React, Node.js, System Design dành cho sinh viên CNTT và Fresher.',
+  keywords: [
+    'ngân hàng câu hỏi phỏng vấn IT',
+    'câu hỏi phỏng vấn lập trình',
+    'câu hỏi phỏng vấn thực tập sinh',
+    'ôn phỏng vấn môn học CNTT',
+  ],
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL || 'https://vinterview.vn'}/questions`,
+  },
+  openGraph: {
+    title: 'Ngân Hàng Câu Hỏi Phỏng Vấn IT — Sinh Viên & Fresher',
+    description: 'Tổng hợp ngân hàng câu hỏi phỏng vấn Lập trình, môn học CNTT và frameworks phổ biến.',
+    url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://vinterview.vn'}/questions`,
+  },
+};
 
 interface PageProps {
   searchParams: Promise<{
