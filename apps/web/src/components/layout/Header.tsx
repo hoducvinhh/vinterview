@@ -1,13 +1,41 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { api, Question } from '@/lib/api';
 
 export function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const [search, setSearch] = useState('');
+  const [suggestions, setSuggestions] = useState<Question[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    const term = search.trim();
+    if (term.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await api.getQuestions({ search: term, limit: 6 });
+        setSuggestions(response.data);
+      } catch {
+        setSuggestions([]);
+      }
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
+  const submitSearch = () => {
+    const term = search.trim();
+    if (term) router.push(`/questions?search=${encodeURIComponent(term)}`);
+  };
 
   const navItems = [
     { label: 'Trang chủ', href: '/' },
@@ -68,7 +96,11 @@ export function Header() {
             </div>
             <input
               type="text"
-              readOnly
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setShowSuggestions(true); }}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => window.setTimeout(() => setShowSuggestions(false), 150)}
+              onKeyDown={(e) => e.key === 'Enter' && submitSearch()}
               placeholder="Tìm kiếm câu hỏi..."
               className="w-full bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-lg pl-9 pr-8 py-1.5 text-xs text-slate-800 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 cursor-pointer"
             />
@@ -77,6 +109,16 @@ export function Header() {
                 ⌘K
               </kbd>
             </div>
+            {showSuggestions && search.trim().length >= 2 && (
+              <div className="absolute z-30 left-0 right-0 top-full mt-1 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl">
+                {suggestions.length > 0 ? suggestions.map((question) => (
+                  <Link key={question.id} href={`/questions/${question.slug}`} className="block border-b border-slate-100 dark:border-slate-800 px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800">
+                    <span className="block text-[11px] font-semibold text-slate-900 dark:text-white line-clamp-2">{question.title}</span>
+                    <span className="text-[9px] text-slate-500">{question.technology.name} · {question.category.name}</span>
+                  </Link>
+                )) : <div className="px-3 py-2 text-[11px] text-slate-500">Không có câu hỏi liên quan.</div>}
+              </div>
+            )}
           </div>
 
           {/* Theme Toggle Button */}

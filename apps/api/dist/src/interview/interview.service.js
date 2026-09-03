@@ -12,12 +12,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.InterviewService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const ai_evaluator_service_1 = require("./ai-evaluator.service");
 const crypto_1 = require("crypto");
 let InterviewService = class InterviewService {
     prisma;
+    aiEvaluator;
     sessions = new Map();
-    constructor(prisma) {
+    constructor(prisma, aiEvaluator) {
         this.prisma = prisma;
+        this.aiEvaluator = aiEvaluator;
     }
     async startInterview(dto, userId) {
         const where = {};
@@ -84,10 +87,18 @@ let InterviewService = class InterviewService {
         if (!currentQuestion) {
             throw new common_1.BadRequestException('Interview session has already completed.');
         }
+        const aiEvaluation = await this.aiEvaluator.evaluateAnswer({
+            questionTitle: currentQuestion.title,
+            questionContent: currentQuestion.content,
+            canonicalAnswer: currentQuestion.answer?.content,
+            userAnswer: dto.userAnswer,
+        });
+        const finalRating = aiEvaluation.rating || dto.rating || 3;
         session.answers[dto.questionId] = {
             questionId: dto.questionId,
             userAnswer: dto.userAnswer,
-            rating: dto.rating,
+            rating: finalRating,
+            aiEvaluation,
         };
         session.currentIndex += 1;
         const isComplete = session.currentIndex >= session.questions.length;
@@ -99,6 +110,7 @@ let InterviewService = class InterviewService {
             success: true,
             data: {
                 expectedAnswer: currentQuestion.answer,
+                aiEvaluation,
                 isComplete,
                 currentIndex: session.currentIndex,
                 totalQuestions: session.questions.length,
@@ -136,6 +148,7 @@ let InterviewService = class InterviewService {
                 userAnswer: ans.userAnswer,
                 rating: ans.rating,
                 expectedAnswer: q.answer,
+                aiEvaluation: ans.aiEvaluation,
             };
         });
         const scorePercentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
@@ -161,6 +174,7 @@ let InterviewService = class InterviewService {
 exports.InterviewService = InterviewService;
 exports.InterviewService = InterviewService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        ai_evaluator_service_1.AiEvaluatorService])
 ], InterviewService);
 //# sourceMappingURL=interview.service.js.map

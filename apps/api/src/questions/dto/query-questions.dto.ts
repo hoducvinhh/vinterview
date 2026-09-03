@@ -19,7 +19,7 @@ export class QueryQuestionsDto {
   @Max(100)
   limit?: number = 10;
 
-  @ApiPropertyOptional({ description: 'Case-insensitive search query on question title', example: 'event loop' })
+  @ApiPropertyOptional({ description: 'Case-insensitive search across question title, content, slug, category, technology, and answer', example: 'event loop' })
   @IsOptional()
   @IsString()
   search?: string;

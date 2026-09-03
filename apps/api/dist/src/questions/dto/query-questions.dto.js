@@ -43,7 +43,7 @@ __decorate([
     __metadata("design:type", Number)
 ], QueryQuestionsDto.prototype, "limit", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ description: 'Case-insensitive search query on question title', example: 'event loop' }),
+    (0, swagger_1.ApiPropertyOptional)({ description: 'Case-insensitive search across question title, content, slug, category, technology, and answer', example: 'event loop' }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)

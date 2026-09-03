@@ -10,6 +10,8 @@ import { BookmarksModule } from './bookmarks/bookmarks.module';
 import { ProgressModule } from './progress/progress.module';
 import { InterviewModule } from './interview/interview.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { UsersModule } from './users/users.module';
+import { ResumeModule } from './resume/resume.module';
 
 @Module({
   imports: [
@@ -22,8 +24,11 @@ import { AnalyticsModule } from './analytics/analytics.module';
     ProgressModule,
     InterviewModule,
     AnalyticsModule,
+    UsersModule,
+    ResumeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
+

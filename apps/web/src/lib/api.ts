@@ -121,6 +121,11 @@ export interface TechnologiesResponse {
   data: Technology[];
 }
 
+export interface UsersResponse {
+  success: boolean;
+  data: User[];
+}
+
 export interface QueryQuestionsParams {
   page?: number;
   limit?: number;
@@ -146,7 +151,7 @@ export interface CreateQuestionPayload {
   };
 }
 
-export interface UpdateQuestionPayload extends Partial<CreateQuestionPayload> {}
+export interface UpdateQuestionPayload extends Partial<CreateQuestionPayload> { }
 
 export interface StartInterviewPayload {
   technology?: string;
@@ -165,6 +170,30 @@ export interface StartInterviewResponse {
   };
 }
 
+export interface CvAnalysisResponse {
+  success: boolean;
+  data: {
+    candidateName?: string;
+    title?: string;
+    detectedSkills: string[];
+    experienceLevel: string;
+    summary: string;
+    matchedTechnologies: Array<{ id: string; name: string; slug: string }>;
+    matchingQuestionCount: number;
+    recommendedQuestionIds: string[];
+  };
+}
+
+export interface AiEvaluationResult {
+
+  rating: number;
+  scorePercent: number;
+  strengths: string[];
+  improvements: string[];
+  aiFeedback: string;
+  suggestedAnswer: string;
+}
+
 export interface SubmitAnswerPayload {
   questionId: string;
   userAnswer: string;
@@ -175,6 +204,7 @@ export interface SubmitAnswerResponse {
   success: boolean;
   data: {
     expectedAnswer: Answer;
+    aiEvaluation?: AiEvaluationResult;
     isComplete: boolean;
     currentIndex: number;
     totalQuestions: number;
@@ -191,6 +221,7 @@ export interface QuestionSummary {
   userAnswer: string;
   rating: number;
   expectedAnswer?: Answer;
+  aiEvaluation?: AiEvaluationResult;
 }
 
 export interface InterviewResultResponse {
@@ -205,6 +236,7 @@ export interface InterviewResultResponse {
     questionsSummary: QuestionSummary[];
   };
 }
+
 
 class ApiClient {
   private baseUrl: string;
@@ -339,6 +371,24 @@ class ApiClient {
     return this.delete<{ success: boolean; message: string }>(`/technologies/${id}`);
   }
 
+  // Users CRUD
+  async getUsers(search?: string): Promise<UsersResponse> {
+    const query = search ? `?search=${encodeURIComponent(search)}` : '';
+    return this.get<UsersResponse>(`/users${query}`);
+  }
+
+  async createUser(payload: { email: string; password: string; name?: string; role?: User['role'] }): Promise<{ success: boolean; data: User }> {
+    return this.post<{ success: boolean; data: User }>('/users', payload);
+  }
+
+  async updateUser(id: string, payload: { email?: string; password?: string; name?: string; role?: User['role'] }): Promise<{ success: boolean; data: User }> {
+    return this.patch<{ success: boolean; data: User }>(`/users/${id}`, payload);
+  }
+
+  async deleteUser(id: string): Promise<{ success: boolean; message: string }> {
+    return this.delete<{ success: boolean; message: string }>(`/users/${id}`);
+  }
+
   // Interview Methods
   async startInterview(payload: StartInterviewPayload): Promise<StartInterviewResponse> {
     return this.post<StartInterviewResponse>('/interview/start', payload);
@@ -427,9 +477,32 @@ class ApiClient {
     return this.patch<QuestionDetailResponse>(`/questions/${id}`, payload);
   }
 
+  async analyzeResume(file: File): Promise<CvAnalysisResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = this.getToken();
+    const response = await fetch(`${this.baseUrl}/resume/analyze`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Phân tích CV thất bại với trạng thái ${response.status}`);
+    }
+
+    return response.json();
+  }
+
   async deleteQuestion(id: string): Promise<{ success: boolean; message: string }> {
+
     return this.delete<{ success: boolean; message: string }>(`/questions/${id}`);
   }
 }
 
 export const api = new ApiClient(API_BASE_URL);
+

@@ -1,10 +1,12 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { StartInterviewDto } from './dto/start-interview.dto';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
+import { AiEvaluatorService, AiEvaluationResult } from './ai-evaluator.service';
 export declare class InterviewService {
     private readonly prisma;
+    private readonly aiEvaluator;
     private sessions;
-    constructor(prisma: PrismaService);
+    constructor(prisma: PrismaService, aiEvaluator: AiEvaluatorService);
     startInterview(dto: StartInterviewDto, userId?: string): Promise<{
         success: boolean;
         data: {
@@ -40,6 +42,7 @@ export declare class InterviewService {
         success: boolean;
         data: {
             expectedAnswer: any;
+            aiEvaluation: AiEvaluationResult;
             isComplete: boolean;
             currentIndex: number;
             totalQuestions: number;
@@ -72,6 +75,7 @@ export declare class InterviewService {
                 userAnswer: string;
                 rating: number;
                 expectedAnswer: any;
+                aiEvaluation: AiEvaluationResult | undefined;
             }[];
         };
     }>;

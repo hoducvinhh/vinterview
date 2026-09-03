@@ -29,8 +29,17 @@ let QuestionsService = class QuestionsService {
         const { page = 1, limit = 10, search, category, technology, difficulty, sortBy = 'createdAt', sortOrder = 'desc', } = query;
         const skip = (page - 1) * limit;
         const where = {};
-        if (search) {
-            where.title = { contains: search, mode: 'insensitive' };
+        if (search?.trim()) {
+            const term = search.trim();
+            where.OR = [
+                { title: { contains: term, mode: 'insensitive' } },
+                { slug: { contains: term, mode: 'insensitive' } },
+                { content: { contains: term, mode: 'insensitive' } },
+                { category: { name: { contains: term, mode: 'insensitive' } } },
+                { technology: { name: { contains: term, mode: 'insensitive' } } },
+                { answer: { content: { contains: term, mode: 'insensitive' } } },
+                { answer: { explanation: { contains: term, mode: 'insensitive' } } },
+            ];
         }
         if (category) {
             const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(category);

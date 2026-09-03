@@ -10,14 +10,15 @@ exports.InterviewModule = void 0;
 const common_1 = require("@nestjs/common");
 const interview_service_1 = require("./interview.service");
 const interview_controller_1 = require("./interview.controller");
+const ai_evaluator_service_1 = require("./ai-evaluator.service");
 let InterviewModule = class InterviewModule {
 };
 exports.InterviewModule = InterviewModule;
 exports.InterviewModule = InterviewModule = __decorate([
     (0, common_1.Module)({
         controllers: [interview_controller_1.InterviewController],
-        providers: [interview_service_1.InterviewService],
-        exports: [interview_service_1.InterviewService],
+        providers: [interview_service_1.InterviewService, ai_evaluator_service_1.AiEvaluatorService],
+        exports: [interview_service_1.InterviewService, ai_evaluator_service_1.AiEvaluatorService],
     })
 ], InterviewModule);
 //# sourceMappingURL=interview.module.js.map

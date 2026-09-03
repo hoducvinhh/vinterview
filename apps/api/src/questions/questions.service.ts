@@ -35,8 +35,17 @@ export class QuestionsService {
     // Build dynamic Prisma filter
     const where: Prisma.QuestionWhereInput = {};
 
-    if (search) {
-      where.title = { contains: search, mode: 'insensitive' };
+    if (search?.trim()) {
+      const term = search.trim();
+      where.OR = [
+        { title: { contains: term, mode: 'insensitive' } },
+        { slug: { contains: term, mode: 'insensitive' } },
+        { content: { contains: term, mode: 'insensitive' } },
+        { category: { name: { contains: term, mode: 'insensitive' } } },
+        { technology: { name: { contains: term, mode: 'insensitive' } } },
+        { answer: { content: { contains: term, mode: 'insensitive' } } },
+        { answer: { explanation: { contains: term, mode: 'insensitive' } } },
+      ];
     }
 
     if (category) {

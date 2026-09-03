@@ -38,8 +38,8 @@ export function InterviewResultView({ result, onRetry }: InterviewResultViewProp
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
       {/* Result Hero Header */}
       <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center shadow-xl space-y-4">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-xs font-semibold uppercase tracking-wider">
-          🎉 Hoàn Thành Buổi Phỏng Vấn Thử
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 text-xs font-semibold uppercase tracking-wider">
+          🎉 Báo Cáo Phân Tích Từ Gemini AI Tech Lead
         </div>
 
         <div className="space-y-1">
@@ -50,16 +50,15 @@ export function InterviewResultView({ result, onRetry }: InterviewResultViewProp
         </div>
 
         <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-          Bạn đã đạt <span className="text-slate-900 dark:text-white font-bold">{totalScore}</span> trên tổng số{' '}
-          <span className="text-slate-900 dark:text-white font-bold">{maxScore}</span> điểm tự đánh giá qua{' '}
-          <span className="text-slate-900 dark:text-white font-bold">{totalQuestions}</span> câu hỏi.
+          Điểm số được tính toán tự động bởi Gemini AI dựa trên{' '}
+          <span className="text-slate-900 dark:text-white font-bold">{totalQuestions}</span> câu hỏi phỏng vấn kỹ thuật.
         </p>
 
         <div className="flex justify-center gap-3 pt-2">
           <button
             type="button"
             onClick={onRetry}
-            className="px-5 py-2.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-md shadow-blue-600/20 transition-all cursor-pointer"
+            className="px-5 py-2.5 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 rounded-xl shadow-md shadow-purple-600/20 transition-all cursor-pointer"
           >
             Luyện Phỏng Vấn Lại &rarr;
           </button>
@@ -72,30 +71,57 @@ export function InterviewResultView({ result, onRetry }: InterviewResultViewProp
         </div>
       </div>
 
-      {/* Breakdown Questions Table */}
-      <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md space-y-4">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Chi Tiết Điểm Số Các Câu Hỏi</h2>
+      {/* Breakdown Questions Table with AI Feedback */}
+      <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md space-y-6">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>✨</span> Chi Tiết Đánh Giá Từ AI Cho Từng Câu Hỏi
+        </h2>
 
-        <div className="space-y-4 divide-y divide-slate-200 dark:divide-slate-800">
+        <div className="space-y-6 divide-y divide-slate-200 dark:divide-slate-800">
           {questionsSummary.map((q, index) => (
-            <div key={q.id || index} className="pt-4 first:pt-0 space-y-2">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <span className="text-xs font-mono text-slate-400 mr-2">#{index + 1}</span>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-200">{q.title}</span>
+            <div key={q.id || index} className="pt-6 first:pt-0 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-purple-600 dark:text-purple-400 font-bold bg-purple-500/10 px-2 py-0.5 rounded">
+                    #{index + 1}
+                  </span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-slate-200">{q.title}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="tech">{q.technology}</Badge>
-                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
-                    Đánh giá: {q.rating}/5
+                  <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-500/20">
+                    Điểm AI: {q.rating}/5 ({q.aiEvaluation?.scorePercent || q.rating * 20}%)
                   </span>
                 </div>
               </div>
 
-              {q.userAnswer && (
-                <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
-                  <span className="font-semibold text-slate-800 dark:text-slate-300">Câu trả lời của bạn: </span>
-                  <span>{q.userAnswer}</span>
+              {/* User answer preview */}
+              <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300">
+                <span className="font-semibold text-slate-500 uppercase text-[10px] block mb-1">CÂU TRẢ LỜI CỦA BẠN:</span>
+                <p className="whitespace-pre-line">{q.userAnswer || 'Chưa nhập câu trả lời.'}</p>
+              </div>
+
+              {/* AI Feedback Box */}
+              {q.aiEvaluation && (
+                <div className="bg-purple-950/20 border border-purple-500/20 rounded-xl p-4 space-y-2">
+                  <div className="text-xs font-bold text-purple-400 flex items-center gap-1.5">
+                    <span>🤖 AI Feedback:</span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    {q.aiEvaluation.aiFeedback}
+                  </p>
+                  
+                  {q.aiEvaluation.strengths && q.aiEvaluation.strengths.length > 0 && (
+                    <div className="text-xs text-emerald-400 font-semibold pt-1">
+                      ✓ Điểm mạnh: {q.aiEvaluation.strengths.join(', ')}
+                    </div>
+                  )}
+
+                  {q.aiEvaluation.improvements && q.aiEvaluation.improvements.length > 0 && (
+                    <div className="text-xs text-amber-400 font-semibold">
+                      💡 Cần bổ sung: {q.aiEvaluation.improvements.join(', ')}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

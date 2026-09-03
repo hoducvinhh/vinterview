@@ -19,6 +19,8 @@ const bookmarks_module_1 = require("./bookmarks/bookmarks.module");
 const progress_module_1 = require("./progress/progress.module");
 const interview_module_1 = require("./interview/interview.module");
 const analytics_module_1 = require("./analytics/analytics.module");
+const users_module_1 = require("./users/users.module");
+const resume_module_1 = require("./resume/resume.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -34,6 +36,8 @@ exports.AppModule = AppModule = __decorate([
             progress_module_1.ProgressModule,
             interview_module_1.InterviewModule,
             analytics_module_1.AnalyticsModule,
+            users_module_1.UsersModule,
+            resume_module_1.ResumeModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

@@ -2,12 +2,14 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { StartInterviewDto } from './dto/start-interview.dto';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
+import { AiEvaluatorService, AiEvaluationResult } from './ai-evaluator.service';
 import { randomUUID } from 'crypto';
 
 interface SessionAnswer {
   questionId: string;
   userAnswer: string;
   rating: number;
+  aiEvaluation?: AiEvaluationResult;
 }
 
 interface InterviewSessionState {
@@ -24,7 +26,10 @@ interface InterviewSessionState {
 export class InterviewService {
   private sessions = new Map<string, InterviewSessionState>();
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly aiEvaluator: AiEvaluatorService,
+  ) {}
 
   async startInterview(dto: StartInterviewDto, userId?: string) {
     const where: any = {};
@@ -105,11 +110,22 @@ export class InterviewService {
       throw new BadRequestException('Interview session has already completed.');
     }
 
-    // Save answer and rating
+    // Evaluate answer via Gemini AI
+    const aiEvaluation = await this.aiEvaluator.evaluateAnswer({
+      questionTitle: currentQuestion.title,
+      questionContent: currentQuestion.content,
+      canonicalAnswer: currentQuestion.answer?.content,
+      userAnswer: dto.userAnswer,
+    });
+
+    const finalRating = aiEvaluation.rating || dto.rating || 3;
+
+    // Save answer, rating, and AI evaluation
     session.answers[dto.questionId] = {
       questionId: dto.questionId,
       userAnswer: dto.userAnswer,
-      rating: dto.rating,
+      rating: finalRating,
+      aiEvaluation,
     };
 
     session.currentIndex += 1;
@@ -125,6 +141,7 @@ export class InterviewService {
       success: true,
       data: {
         expectedAnswer: currentQuestion.answer,
+        aiEvaluation,
         isComplete,
         currentIndex: session.currentIndex,
         totalQuestions: session.questions.length,
@@ -166,6 +183,7 @@ export class InterviewService {
         userAnswer: ans.userAnswer,
         rating: ans.rating,
         expectedAnswer: q.answer,
+        aiEvaluation: ans.aiEvaluation,
       };
     });
 
@@ -189,3 +207,4 @@ export class InterviewService {
     };
   }
 }
+

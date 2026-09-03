@@ -39,6 +39,7 @@ export declare class InterviewController {
         success: boolean;
         data: {
             expectedAnswer: any;
+            aiEvaluation: import("./ai-evaluator.service").AiEvaluationResult;
             isComplete: boolean;
             currentIndex: number;
             totalQuestions: number;
@@ -71,6 +72,7 @@ export declare class InterviewController {
                 userAnswer: string;
                 rating: number;
                 expectedAnswer: any;
+                aiEvaluation: import("./ai-evaluator.service").AiEvaluationResult | undefined;
             }[];
         };
     }>;

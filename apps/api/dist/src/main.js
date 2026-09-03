@@ -17,7 +17,7 @@ async function bootstrap() {
         transform: true,
     }));
     const swaggerUser = process.env.SWAGGER_USER || 'admin';
-    const swaggerPass = process.env.SWAGGER_PASS || 'vinterview_admin_2026';
+    const swaggerPass = process.env.SWAGGER_PASS || 'vinterview_admin';
     app.use(['/api/docs', '/api/docs-json'], (req, res, next) => {
         const authHeader = req.headers.authorization;
         if (authHeader) {
@@ -40,7 +40,7 @@ async function bootstrap() {
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, swaggerConfig);
     swagger_1.SwaggerModule.setup('api/docs', app, document);
-    const port = process.env.PORT || 4000;
+    const port = process.env.PORT || 4001;
     await app.listen(port);
     console.log(`🚀 NestJS Backend running on http://localhost:${port}/api`);
     console.log(`🔒 Swagger API Docs (Admin Only) protected at http://localhost:${port}/api/docs`);

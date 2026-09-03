@@ -11,6 +11,7 @@ export function AdminHeader() {
     { label: '📝 Quản Lý Câu Hỏi', href: '/admin/questions' },
     { label: '📁 Quản Lý Danh Mục', href: '/admin/categories' },
     { label: '⚡ Quản Lý Công Nghệ', href: '/admin/technologies' },
+    { label: '👥 Quản Lý Người Dùng', href: '/admin/users' },
   ];
 
   return (
@@ -31,11 +32,10 @@ export function AdminHeader() {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                isActive
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${isActive
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
-              }`}
+                }`}
             >
               {tab.label}
             </Link>

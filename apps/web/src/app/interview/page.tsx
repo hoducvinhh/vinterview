@@ -42,21 +42,23 @@ export default function InterviewPage() {
       rating,
     });
 
+    let nextQuestionData: Question | null = null;
     if (res.data.isComplete) {
-      // Fetch final results
       const resultRes = await api.getInterviewResult(sessionId);
       setResult(resultRes.data);
-      setStep('result');
     } else if (res.data.nextQuestion) {
-      setCurrentIndex(res.data.currentIndex);
-      setCurrentQuestion(res.data.nextQuestion);
+      nextQuestionData = res.data.nextQuestion;
     }
 
     return {
       expectedAnswer: res.data.expectedAnswer,
+      aiEvaluation: res.data.aiEvaluation,
       isComplete: res.data.isComplete,
+      nextQuestion: nextQuestionData,
+      nextIndex: res.data.currentIndex,
     };
   };
+
 
   const handleRetry = () => {
     setStep('setup');
@@ -79,8 +81,18 @@ export default function InterviewPage() {
           totalQuestions={totalQuestions}
           currentIndex={currentIndex}
           onSubmit={handleSubmitAnswer}
+          onNextQuestion={(nextQuestion, nextIndex) => {
+            if (nextQuestion && typeof nextIndex === 'number') {
+              setCurrentQuestion(nextQuestion);
+              setCurrentIndex(nextIndex);
+            } else {
+              setStep('result');
+            }
+          }}
+
         />
       )}
+
 
       {step === 'result' && result && (
         <InterviewResultView result={result} onRetry={handleRetry} />

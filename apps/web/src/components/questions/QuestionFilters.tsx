@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Category, Technology } from '@/lib/api';
+import { api, Category, Question, Technology } from '@/lib/api';
 
 interface QuestionFiltersProps {
   categories: Category[];
@@ -17,6 +19,28 @@ export function QuestionFilters({ categories, technologies }: QuestionFiltersPro
   const currentCategory = searchParams.get('category') || '';
   const currentTechnology = searchParams.get('technology') || '';
   const currentDifficulty = searchParams.get('difficulty') || '';
+  const [search, setSearch] = useState(currentSearch);
+  const [suggestions, setSuggestions] = useState<Question[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => setSearch(currentSearch), [currentSearch]);
+
+  useEffect(() => {
+    const term = search.trim();
+    if (term.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await api.getQuestions({ search: term, limit: 6 });
+        setSuggestions(response.data);
+      } catch {
+        setSuggestions([]);
+      }
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
   const updateFilters = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -41,11 +65,23 @@ export function QuestionFilters({ categories, technologies }: QuestionFiltersPro
           </div>
           <input
             type="text"
-            defaultValue={currentSearch}
+            value={search}
             placeholder="Tìm kiếm câu hỏi theo tiêu đề hoặc từ khóa..."
-            onChange={(e) => updateFilters('search', e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setShowSuggestions(true); updateFilters('search', e.target.value); }}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => window.setTimeout(() => setShowSuggestions(false), 150)}
             className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg pl-9 pr-4 py-2 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500"
           />
+          {showSuggestions && search.trim().length >= 2 && (
+            <div className="absolute z-20 left-0 right-0 top-full mt-1 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl">
+              {suggestions.length > 0 ? suggestions.map((question) => (
+                <Link key={question.id} href={`/questions/${question.slug}`} className="block border-b border-slate-100 dark:border-slate-800 px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800">
+                  <span className="block text-xs font-semibold text-slate-900 dark:text-white">{question.title}</span>
+                  <span className="text-[10px] text-slate-500">{question.technology.name} · {question.category.name}</span>
+                </Link>
+              )) : <div className="px-3 py-3 text-xs text-slate-500">Không có câu hỏi liên quan.</div>}
+            </div>
+          )}
         </div>
       </div>
 
