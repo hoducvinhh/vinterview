@@ -51,6 +51,12 @@ const userSelect = {
     email: true,
     name: true,
     role: true,
+    avatarUrl: true,
+    headline: true,
+    bio: true,
+    githubUrl: true,
+    linkedinUrl: true,
+    websiteUrl: true,
     createdAt: true,
     updatedAt: true,
 };
@@ -118,6 +124,22 @@ let UsersService = class UsersService {
             throw new common_1.NotFoundException('User not found.');
         await this.prisma.user.delete({ where: { id } });
         return { success: true, message: 'User deleted successfully.' };
+    }
+    async updateSelfProfile(userId, dto) {
+        const user = await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                ...(dto.name !== undefined && { name: dto.name }),
+                ...(dto.headline !== undefined && { headline: dto.headline }),
+                ...(dto.bio !== undefined && { bio: dto.bio }),
+                ...(dto.avatarUrl !== undefined && { avatarUrl: dto.avatarUrl }),
+                ...(dto.githubUrl !== undefined && { githubUrl: dto.githubUrl }),
+                ...(dto.linkedinUrl !== undefined && { linkedinUrl: dto.linkedinUrl }),
+                ...(dto.websiteUrl !== undefined && { websiteUrl: dto.websiteUrl }),
+            },
+            select: userSelect,
+        });
+        return { success: true, data: user };
     }
 };
 exports.UsersService = UsersService;

@@ -1,9 +1,29 @@
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
 export declare class UsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
+    updateProfile(currentUser: {
+        id: string;
+    }, dto: UpdateProfileDto): Promise<{
+        success: boolean;
+        data: {
+            id: string;
+            email: string;
+            name: string | null;
+            role: import("@prisma/client").$Enums.UserRole;
+            avatarUrl: string | null;
+            headline: string | null;
+            bio: string | null;
+            githubUrl: string | null;
+            linkedinUrl: string | null;
+            websiteUrl: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+    }>;
     findAll(search?: string): Promise<{
         success: boolean;
         data: {
@@ -11,6 +31,12 @@ export declare class UsersController {
             email: string;
             name: string | null;
             role: import("@prisma/client").$Enums.UserRole;
+            avatarUrl: string | null;
+            headline: string | null;
+            bio: string | null;
+            githubUrl: string | null;
+            linkedinUrl: string | null;
+            websiteUrl: string | null;
             createdAt: Date;
             updatedAt: Date;
         }[];
@@ -22,6 +48,12 @@ export declare class UsersController {
             email: string;
             name: string | null;
             role: import("@prisma/client").$Enums.UserRole;
+            avatarUrl: string | null;
+            headline: string | null;
+            bio: string | null;
+            githubUrl: string | null;
+            linkedinUrl: string | null;
+            websiteUrl: string | null;
             createdAt: Date;
             updatedAt: Date;
         };
@@ -35,6 +67,12 @@ export declare class UsersController {
             email: string;
             name: string | null;
             role: import("@prisma/client").$Enums.UserRole;
+            avatarUrl: string | null;
+            headline: string | null;
+            bio: string | null;
+            githubUrl: string | null;
+            linkedinUrl: string | null;
+            websiteUrl: string | null;
             createdAt: Date;
             updatedAt: Date;
         };

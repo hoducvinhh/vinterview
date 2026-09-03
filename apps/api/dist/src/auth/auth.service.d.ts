@@ -15,6 +15,12 @@ export declare class AuthService {
             email: string;
             name: string | null;
             role: import("@prisma/client").$Enums.UserRole;
+            avatarUrl: string | null;
+            headline: string | null;
+            bio: string | null;
+            githubUrl: string | null;
+            linkedinUrl: string | null;
+            websiteUrl: string | null;
             createdAt: Date;
         };
     }>;
@@ -27,6 +33,12 @@ export declare class AuthService {
             email: string;
             name: string | null;
             role: import("@prisma/client").$Enums.UserRole;
+            avatarUrl: string | null;
+            headline: string | null;
+            bio: string | null;
+            githubUrl: string | null;
+            linkedinUrl: string | null;
+            websiteUrl: string | null;
             createdAt: Date;
         };
     }>;
@@ -37,6 +49,12 @@ export declare class AuthService {
             email: string;
             name: string | null;
             role: import("@prisma/client").$Enums.UserRole;
+            avatarUrl: string | null;
+            headline: string | null;
+            bio: string | null;
+            githubUrl: string | null;
+            linkedinUrl: string | null;
+            websiteUrl: string | null;
             createdAt: Date;
             updatedAt: Date;
         };

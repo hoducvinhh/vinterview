@@ -25,16 +25,22 @@ enum ProgressStatus {
 }
 
 model User {
-  id        String         @id @default(uuid())
-  email     String         @unique
-  name      String?
-  password  String
-  role      UserRole       @default(USER)
-  bookmarks Bookmark[]
-  progress  UserProgress[]
-  questions Question[]     @relation("AuthoredQuestions")
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id          String         @id @default(uuid())
+  email       String         @unique
+  name        String?
+  password    String
+  role        UserRole       @default(USER)
+  avatarUrl   String?
+  headline    String?
+  bio         String?        @db.Text
+  githubUrl   String?
+  linkedinUrl String?
+  websiteUrl  String?
+  bookmarks   Bookmark[]
+  progress    UserProgress[]
+  questions   Question[]     @relation("AuthoredQuestions")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 }
 
 model Category {

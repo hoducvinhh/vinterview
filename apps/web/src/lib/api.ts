@@ -12,8 +12,23 @@ export interface User {
   name?: string;
   role: 'USER' | 'ADMIN';
   avatarUrl?: string;
+  headline?: string;
+  bio?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  websiteUrl?: string;
   createdAt: string;
   updatedAt?: string;
+}
+
+export interface UpdateProfilePayload {
+  name?: string;
+  headline?: string;
+  bio?: string;
+  avatarUrl?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  websiteUrl?: string;
 }
 
 export interface AuthResponse {
@@ -387,6 +402,10 @@ class ApiClient {
 
   async deleteUser(id: string): Promise<{ success: boolean; message: string }> {
     return this.delete<{ success: boolean; message: string }>(`/users/${id}`);
+  }
+
+  async updateProfile(payload: UpdateProfilePayload): Promise<{ success: boolean; data: User }> {
+    return this.patch<{ success: boolean; data: User }>('/users/me/profile', payload);
   }
 
   // Interview Methods

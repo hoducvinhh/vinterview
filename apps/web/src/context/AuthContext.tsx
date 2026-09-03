@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { api, User } from '@/lib/api';
+import { api, User, UpdateProfilePayload } from '@/lib/api';
 
 interface AuthContextType {
   user: User | null;
@@ -10,6 +10,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name?: string) => Promise<void>;
+  updateProfile: (payload: UpdateProfilePayload) => Promise<User>;
   logout: () => void;
 }
 
@@ -56,6 +57,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(res.user);
   };
 
+  const updateProfile = async (payload: UpdateProfilePayload) => {
+    const res = await api.updateProfile(payload);
+    setUser(res.data);
+    return res.data;
+  };
+
   const logout = () => {
     api.setToken(null);
     setUser(null);
@@ -70,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         login,
         register,
+        updateProfile,
         logout,
       }}
     >

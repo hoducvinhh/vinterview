@@ -41,7 +41,6 @@ export function Header() {
     { label: 'Trang chủ', href: '/' },
     { label: 'Câu hỏi', href: '/questions' },
     { label: 'Luyện phỏng vấn', href: '/interview' },
-    { label: '☕️ Donate', href: '/donate', isHighlight: true },
     ...(isAuthenticated
       ? [
           { label: 'Tổng quan', href: '/dashboard' },
@@ -49,6 +48,7 @@ export function Header() {
         ]
       : []),
     ...(isAdmin ? [{ label: 'Quản trị', href: '/admin/questions' }] : []),
+    { label: '☕️ Donate', href: '/donate', isHighlight: true },
   ];
 
   return (
@@ -145,14 +145,28 @@ export function Header() {
           {/* Authentication Actions */}
           {isAuthenticated && user ? (
             <div className="flex items-center gap-3">
-              <div className="hidden sm:flex flex-col text-right">
-                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                  {user.name || user.email.split('@')[0]}
-                </span>
-                <span className={`text-[10px] font-bold uppercase font-mono ${isAdmin ? 'text-purple-600 dark:text-purple-400' : 'text-blue-600 dark:text-blue-400'}`}>
-                  {user.role}
-                </span>
-              </div>
+              <Link href="/profile" className="flex items-center gap-2 group hover:opacity-90 transition-all">
+                {user.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name || user.email}
+                    className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 object-cover group-hover:border-blue-500 transition-colors"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-lg bg-blue-600/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-xs flex items-center justify-center group-hover:border-blue-500">
+                    {(user.name || user.email)[0].toUpperCase()}
+                  </div>
+                )}
+
+                <div className="hidden sm:flex flex-col text-right">
+                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {user.name || user.email.split('@')[0]}
+                  </span>
+                  <span className={`text-[10px] font-bold uppercase font-mono ${isAdmin ? 'text-purple-600 dark:text-purple-400' : 'text-blue-600 dark:text-blue-400'}`}>
+                    {user.role}
+                  </span>
+                </div>
+              </Link>
 
               <button
                 type="button"
