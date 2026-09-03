@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model User {
+  id        String         @id @default(uuid())
+  email     String         @unique
+  name      String?
+  password  String
+  role      UserRole       @default(USER)
+  bookmarks Bookmark[]
+  progress  UserProgress[]
+  questions Question[]     @relation("AuthoredQuestions")
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  questions   Question[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Technology {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  slug      String     @unique
+  icon      String?
+  questions Question[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Question {
+  id           String         @id @default(uuid())
+  title        String
+  slug         String         @unique
+  content      String         @db.Text
+  difficulty   Difficulty     @default(MEDIUM)
+  categoryId   String
+  category     Category       @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  technologyId String
+  technology   Technology     @relation(fields: [technologyId], references: [id], onDelete: Restrict)
+  authorId     String?
+  author       User?          @relation("AuthoredQuestions", fields: [authorId], references: [id], onDelete: SetNull)
+  answer       Answer?
+  bookmarks    Bookmark[]
+  progress     UserProgress[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([technologyId])
+  @@index([difficulty])
+  @@index([categoryId, technologyId, difficulty])
+}
+
+model Answer {
+  id          String   @id @default(uuid())
+  questionId  String   @unique
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  content     String   @db.Text
+  codeSnippet String?  @db.Text
+  explanation String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Bookmark {
+  id         String   @id @default(uuid())
+  userId     String
+  questionId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, questionId])
+  @@index([userId])
+}
+
+model UserProgress {
+  id         String         @id @default(uuid())
+  userId     String
+  questionId String
+  status     ProgressStatus @default(NOT_STARTED)
+  notes      String?        @db.Text
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question   Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@unique([userId, questionId])
+  @@index([userId])
+}
+
+model PageView {
+  id        String   @id @default(uuid())
+  path      String
+  visitorId String?
+  ip        String?
+  userAgent String?
+  userId    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([visitorId])
+  @@index([path])
+}
+

@@ -1,0 +1,62 @@
+import { CategoriesService } from './categories.service';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
+export declare class CategoriesController {
+    private readonly categoriesService;
+    constructor(categoriesService: CategoriesService);
+    findAll(): Promise<{
+        success: boolean;
+        data: {
+            id: string;
+            name: string;
+            slug: string;
+            description: string | null;
+            questionCount: number;
+            createdAt: Date;
+            updatedAt: Date;
+        }[];
+    }>;
+    findOne(idOrSlug: string): Promise<{
+        success: boolean;
+        data: {
+            questionCount: number;
+            _count: {
+                questions: number;
+            };
+            id: string;
+            name: string;
+            slug: string;
+            description: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+    }>;
+    create(createCategoryDto: CreateCategoryDto): Promise<{
+        success: boolean;
+        message: string;
+        data: {
+            id: string;
+            name: string;
+            slug: string;
+            description: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+    }>;
+    update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<{
+        success: boolean;
+        message: string;
+        data: {
+            id: string;
+            name: string;
+            slug: string;
+            description: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+    }>;
+    remove(id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+}
