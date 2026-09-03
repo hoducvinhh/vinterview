@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { api, ProgressStatus } from '@/lib/api';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 interface ProgressSelectProps {
   questionId: string;
@@ -14,16 +14,16 @@ export function ProgressSelect({
   questionId,
   initialStatus = 'NOT_STARTED',
 }: ProgressSelectProps) {
-  const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [status, setStatus] = useState<ProgressStatus>(initialStatus);
   const [updating, setUpdating] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value as ProgressStatus;
 
     if (!isAuthenticated) {
-      router.push('/login');
+      setShowAuthModal(true);
       return;
     }
 
@@ -48,17 +48,27 @@ export function ProgressSelect({
   };
 
   return (
-    <div className="relative inline-flex items-center">
-      <select
-        value={status}
-        disabled={updating}
-        onChange={handleChange}
-        className={`px-2.5 py-1 rounded-lg text-xs border focus:outline-none cursor-pointer transition-all ${statusColors[status]}`}
-      >
-        <option value="NOT_STARTED">⭕ Not Started</option>
-        <option value="IN_PROGRESS">⏳ In Progress</option>
-        <option value="COMPLETED">✅ Completed</option>
-      </select>
-    </div>
+    <>
+      <div className="relative inline-flex items-center">
+        <select
+          value={status}
+          disabled={updating}
+          onChange={handleChange}
+          className={`px-2.5 py-1 rounded-lg text-xs border focus:outline-none cursor-pointer transition-all ${statusColors[status]}`}
+        >
+          <option value="NOT_STARTED">⭕ Not Started</option>
+          <option value="IN_PROGRESS">⏳ In Progress</option>
+          <option value="COMPLETED">✅ Completed</option>
+        </select>
+      </div>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        title="📊 Theo Dõi Tiến Độ Học Tập"
+        description="Bạn cần đăng nhập để lưu trạng thái đã làm (Not Started / In Progress / Completed) của câu hỏi phỏng vấn."
+        icon="📊"
+      />
+    </>
   );
 }

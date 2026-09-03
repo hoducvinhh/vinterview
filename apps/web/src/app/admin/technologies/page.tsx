@@ -124,7 +124,7 @@ export default function AdminTechnologiesPage() {
           Bạn cần đăng nhập bằng tài khoản Quản trị viên (ADMIN) để quản lý công nghệ.
         </p>
         <Link href="/login" className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg inline-block">
-          Đăng Nhập ngay &rarr;
+          Đăng Nhập;
         </Link>
       </div>
     );

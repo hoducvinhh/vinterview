@@ -66,7 +66,7 @@ export default function DashboardPage() {
           href="/login"
           className="px-6 py-2.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-md shadow-blue-600/20 transition-all inline-block"
         >
-          Đăng Nhập Ngay &rarr;
+          Đăng Nhập;
         </Link>
       </div>
     );

@@ -2,12 +2,17 @@
 
 import { useState } from 'react';
 import Editor from '@monaco-editor/react';
+import { useAuth } from '@/context/AuthContext';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 interface CodeSandboxEditorProps {
   onAppendCodeToAnswer: (codeSnippet: string) => void;
 }
 
 export function CodeSandboxEditor({ onAppendCodeToAnswer }: CodeSandboxEditorProps) {
+  const { isAuthenticated } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
   const [language, setLanguage] = useState<'javascript' | 'typescript' | 'python'>('javascript');
   const [code, setCode] = useState<string>(`// Viết mã nguồn hoặc giải thuật của bạn tại đây
 function solution() {
@@ -47,6 +52,11 @@ solution();`);
   };
 
   const handleRunCode = () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+
     setIsRunning(true);
     setOutputLogs([]);
 
@@ -259,6 +269,14 @@ solution();`);
           )}
         </div>
       </div>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        title="💻 Thực Thi Code Sandbox"
+        description="Bạn cần đăng nhập tài khoản để trình biên dịch VS Code Live Editor thực thi mã nguồn JavaScript, TypeScript hoặc Python."
+        icon="💻"
+      />
     </div>
   );
 }
