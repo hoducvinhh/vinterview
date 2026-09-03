@@ -42,7 +42,7 @@ export function ResumeAnalyzerCard({ onStartInterview, isStarting }: ResumeAnaly
 
   const handleLaunchTargetedInterview = async () => {
     if (!cvResult) return;
-    
+
     // Choose primary matched technology or general interview
     const primaryTech = cvResult.matchedTechnologies[0]?.slug || undefined;
 
@@ -60,7 +60,7 @@ export function ResumeAnalyzerCard({ onStartInterview, isStarting }: ResumeAnaly
         </div>
         <div>
           <h3 className="text-base font-bold text-slate-900 dark:text-white">
-            Phân Tích CV Bằng Gemini AI & Tạo Bài Phỏng Vấn
+            Phân Tích CV Bằng AI & Tạo Bài Phỏng Vấn
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Tải lên file PDF CV của bạn để AI tự động nhận diện kỹ năng và chọn bộ câu hỏi trúng đích
