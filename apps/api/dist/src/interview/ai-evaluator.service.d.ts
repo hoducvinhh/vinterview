@@ -8,8 +8,7 @@ export interface AiEvaluationResult {
 }
 export declare class AiEvaluatorService {
     private readonly logger;
-    private aiClient;
-    constructor();
+    private getAiClient;
     evaluateAnswer(params: {
         questionTitle: string;
         questionContent: string;

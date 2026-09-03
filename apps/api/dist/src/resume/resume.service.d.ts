@@ -18,7 +18,8 @@ export declare class ResumeService {
     private readonly prisma;
     private readonly interviewService;
     private readonly logger;
-    private aiClient;
     constructor(prisma: PrismaService, interviewService: InterviewService);
+    private getAiClient;
+    private parsePdfText;
     analyzeCv(fileBuffer: Buffer): Promise<CvAnalysisResult>;
 }

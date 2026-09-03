@@ -26,10 +26,10 @@ export declare class CategoriesService {
             };
             id: string;
             name: string;
-            slug: string;
-            description: string | null;
             createdAt: Date;
             updatedAt: Date;
+            slug: string;
+            description: string | null;
         };
     }>;
     create(createCategoryDto: CreateCategoryDto): Promise<{
@@ -38,10 +38,10 @@ export declare class CategoriesService {
         data: {
             id: string;
             name: string;
-            slug: string;
-            description: string | null;
             createdAt: Date;
             updatedAt: Date;
+            slug: string;
+            description: string | null;
         };
     }>;
     update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<{
@@ -50,10 +50,10 @@ export declare class CategoriesService {
         data: {
             id: string;
             name: string;
-            slug: string;
-            description: string | null;
             createdAt: Date;
             updatedAt: Date;
+            slug: string;
+            description: string | null;
         };
     }>;
     remove(id: string): Promise<{

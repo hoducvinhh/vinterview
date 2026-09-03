@@ -5,9 +5,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
 var AiEvaluatorService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AiEvaluatorService = void 0;
@@ -15,19 +12,18 @@ const common_1 = require("@nestjs/common");
 const genai_1 = require("@google/genai");
 let AiEvaluatorService = AiEvaluatorService_1 = class AiEvaluatorService {
     logger = new common_1.Logger(AiEvaluatorService_1.name);
-    aiClient = null;
-    constructor() {
+    getAiClient() {
         const apiKey = process.env.GEMINI_API_KEY;
-        if (apiKey) {
-            this.aiClient = new genai_1.GoogleGenAI({ apiKey });
-        }
-        else {
+        if (!apiKey) {
             this.logger.warn('GEMINI_API_KEY is not configured in environment variables.');
+            return null;
         }
+        return new genai_1.GoogleGenAI({ apiKey });
     }
     async evaluateAnswer(params) {
         const { questionTitle, questionContent, canonicalAnswer, userAnswer } = params;
-        if (!this.aiClient) {
+        const aiClient = this.getAiClient();
+        if (!aiClient) {
             return this.getFallbackEvaluation('Chưa cấu hình GEMINI_API_KEY.');
         }
         if (!userAnswer || !userAnswer.trim()) {
@@ -62,7 +58,7 @@ YÊU CẦU:
 }
 `;
         try {
-            const response = await this.aiClient.models.generateContent({
+            const response = await aiClient.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: prompt,
                 config: {
@@ -102,7 +98,6 @@ YÊU CẦU:
 };
 exports.AiEvaluatorService = AiEvaluatorService;
 exports.AiEvaluatorService = AiEvaluatorService = AiEvaluatorService_1 = __decorate([
-    (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [])
+    (0, common_1.Injectable)()
 ], AiEvaluatorService);
 //# sourceMappingURL=ai-evaluator.service.js.map

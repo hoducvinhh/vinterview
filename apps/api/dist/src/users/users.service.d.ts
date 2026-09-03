@@ -8,33 +8,33 @@ export declare class UsersService {
         success: boolean;
         data: {
             id: string;
+            email: string;
             name: string | null;
+            role: import("@prisma/client").$Enums.UserRole;
             createdAt: Date;
             updatedAt: Date;
-            email: string;
-            role: import("@prisma/client").$Enums.UserRole;
         }[];
     }>;
     create(dto: CreateUserDto): Promise<{
         success: boolean;
         data: {
             id: string;
+            email: string;
             name: string | null;
+            role: import("@prisma/client").$Enums.UserRole;
             createdAt: Date;
             updatedAt: Date;
-            email: string;
-            role: import("@prisma/client").$Enums.UserRole;
         };
     }>;
     update(id: string, dto: UpdateUserDto, currentUserId: string): Promise<{
         success: boolean;
         data: {
             id: string;
+            email: string;
             name: string | null;
+            role: import("@prisma/client").$Enums.UserRole;
             createdAt: Date;
             updatedAt: Date;
-            email: string;
-            role: import("@prisma/client").$Enums.UserRole;
         };
     }>;
     remove(id: string, currentUserId: string): Promise<{

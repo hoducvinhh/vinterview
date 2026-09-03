@@ -10,10 +10,10 @@ export declare class AuthController {
         accessToken: string;
         user: {
             id: string;
-            name: string | null;
-            createdAt: Date;
             email: string;
+            name: string | null;
             role: import("@prisma/client").$Enums.UserRole;
+            createdAt: Date;
         };
     }>;
     login(loginDto: LoginDto): Promise<{
@@ -32,11 +32,11 @@ export declare class AuthController {
         success: boolean;
         data: {
             id: string;
+            email: string;
             name: string | null;
+            role: import("@prisma/client").$Enums.UserRole;
             createdAt: Date;
             updatedAt: Date;
-            email: string;
-            role: import("@prisma/client").$Enums.UserRole;
         };
     }>;
 }

@@ -25,7 +25,7 @@ export function AdminHeader() {
         </h2>
       </div>
 
-      <nav className="flex items-center gap-2">
+      <nav className="flex flex-wrap items-center gap-2">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href;
           return (
@@ -41,7 +41,16 @@ export function AdminHeader() {
             </Link>
           );
         })}
+        <a
+          href="http://localhost:4003/api/docs"
+          target="_blank"
+          rel="noreferrer"
+          className="px-3 py-1.5 rounded-lg text-xs font-bold font-mono text-purple-600 dark:text-purple-400 bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-all"
+        >
+          🔒 Swagger API Docs
+        </a>
       </nav>
     </div>
   );
 }
+

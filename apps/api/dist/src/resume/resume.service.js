@@ -20,14 +20,47 @@ let ResumeService = ResumeService_1 = class ResumeService {
     prisma;
     interviewService;
     logger = new common_1.Logger(ResumeService_1.name);
-    aiClient = null;
     constructor(prisma, interviewService) {
         this.prisma = prisma;
         this.interviewService = interviewService;
+    }
+    getAiClient() {
         const apiKey = process.env.GEMINI_API_KEY;
-        if (apiKey) {
-            this.aiClient = new genai_1.GoogleGenAI({ apiKey });
+        if (!apiKey)
+            return null;
+        return new genai_1.GoogleGenAI({ apiKey });
+    }
+    async parsePdfText(fileBuffer) {
+        try {
+            if (typeof pdfParse === 'function') {
+                const data = await pdfParse(fileBuffer);
+                if (data && data.text)
+                    return data.text;
+            }
+            if (pdfParse && typeof pdfParse.PDFParse === 'function') {
+                const parser = new pdfParse.PDFParse({ data: fileBuffer });
+                await parser.load();
+                const textResult = await parser.getText();
+                if (typeof textResult === 'string')
+                    return textResult;
+                if (textResult && textResult.text)
+                    return textResult.text;
+                if (textResult && Array.isArray(textResult.pages)) {
+                    return textResult.pages.map((p) => p.text || '').join('\n');
+                }
+            }
+            if (pdfParse && pdfParse.default && typeof pdfParse.default === 'function') {
+                const data = await pdfParse.default(fileBuffer);
+                if (data && data.text)
+                    return data.text;
+            }
         }
+        catch (e) {
+            this.logger.warn(`Primary PDF parser warning: ${e?.message}`);
+        }
+        const rawText = fileBuffer.toString('utf-8');
+        const cleanText = rawText.replace(/[^\x20-\x7E\s\u00C0-\u1EF9]/g, ' ');
+        return cleanText.trim();
     }
     async analyzeCv(fileBuffer) {
         if (!fileBuffer || fileBuffer.length === 0) {
@@ -35,8 +68,7 @@ let ResumeService = ResumeService_1 = class ResumeService {
         }
         let extractedText = '';
         try {
-            const pdfData = await pdfParse(fileBuffer);
-            extractedText = pdfData.text || '';
+            extractedText = await this.parsePdfText(fileBuffer);
         }
         catch (err) {
             this.logger.error(`Lỗi trích xuất chữ từ PDF: ${err.message}`);
@@ -46,7 +78,8 @@ let ResumeService = ResumeService_1 = class ResumeService {
             throw new common_1.BadRequestException('File PDF CV không chứa nội dung văn bản có thể trích xuất.');
         }
         let aiParsedData = {};
-        if (this.aiClient) {
+        const aiClient = this.getAiClient();
+        if (aiClient) {
             try {
                 const prompt = `
 Bạn là một HR Tech Lead / Technical Recruiter chuyên nghiệp.
@@ -65,7 +98,7 @@ Trả về JSON duy nhất với cấu trúc sau (không kèm markdown ngoài JS
   "summary": "<nhận xét tóm tắt ngắn gọn 2 câu về năng lực ứng viên bằng tiếng Việt>"
 }
 `;
-                const response = await this.aiClient.models.generateContent({
+                const response = await aiClient.models.generateContent({
                     model: 'gemini-2.5-flash',
                     contents: prompt,
                     config: {

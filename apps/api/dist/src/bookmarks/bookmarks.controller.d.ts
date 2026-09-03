@@ -10,24 +10,24 @@ export declare class BookmarksController {
                 category: {
                     id: string;
                     name: string;
-                    slug: string;
-                    description: string | null;
                     createdAt: Date;
                     updatedAt: Date;
+                    slug: string;
+                    description: string | null;
                 };
                 technology: {
                     id: string;
                     name: string;
-                    slug: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    slug: string;
                     icon: string | null;
                 };
             } & {
                 id: string;
-                slug: string;
                 createdAt: Date;
                 updatedAt: Date;
+                slug: string;
                 title: string;
                 content: string;
                 difficulty: import("@prisma/client").$Enums.Difficulty;
@@ -52,17 +52,17 @@ export declare class BookmarksController {
             category: {
                 id: string;
                 name: string;
-                slug: string;
-                description: string | null;
                 createdAt: Date;
                 updatedAt: Date;
+                slug: string;
+                description: string | null;
             };
             technology: {
                 id: string;
                 name: string;
-                slug: string;
                 createdAt: Date;
                 updatedAt: Date;
+                slug: string;
                 icon: string | null;
             };
             answer: {
@@ -76,9 +76,9 @@ export declare class BookmarksController {
             } | null;
         } & {
             id: string;
-            slug: string;
             createdAt: Date;
             updatedAt: Date;
+            slug: string;
             title: string;
             content: string;
             difficulty: import("@prisma/client").$Enums.Difficulty;

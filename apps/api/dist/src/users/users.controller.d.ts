@@ -8,22 +8,22 @@ export declare class UsersController {
         success: boolean;
         data: {
             id: string;
+            email: string;
             name: string | null;
+            role: import("@prisma/client").$Enums.UserRole;
             createdAt: Date;
             updatedAt: Date;
-            email: string;
-            role: import("@prisma/client").$Enums.UserRole;
         }[];
     }>;
     create(dto: CreateUserDto): Promise<{
         success: boolean;
         data: {
             id: string;
+            email: string;
             name: string | null;
+            role: import("@prisma/client").$Enums.UserRole;
             createdAt: Date;
             updatedAt: Date;
-            email: string;
-            role: import("@prisma/client").$Enums.UserRole;
         };
     }>;
     update(id: string, dto: UpdateUserDto, currentUser: {
@@ -32,11 +32,11 @@ export declare class UsersController {
         success: boolean;
         data: {
             id: string;
+            email: string;
             name: string | null;
+            role: import("@prisma/client").$Enums.UserRole;
             createdAt: Date;
             updatedAt: Date;
-            email: string;
-            role: import("@prisma/client").$Enums.UserRole;
         };
     }>;
     remove(id: string, currentUser: {

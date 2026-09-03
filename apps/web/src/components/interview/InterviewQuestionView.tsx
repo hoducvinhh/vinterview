@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Question, Answer, AiEvaluationResult } from '@/lib/api';
 import { Badge } from '@/components/ui/Badge';
+import { CodeSandboxEditor } from '../code/CodeSandboxEditor';
 
 interface SubmitResult {
   expectedAnswer: Answer;
@@ -30,6 +31,9 @@ export function InterviewQuestionView({
   const [userAnswer, setUserAnswer] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState<SubmitResult | null>(null);
+
+  // Editor Mode State
+  const [activeInputMode, setActiveInputMode] = useState<'text' | 'code'>('text');
 
   // Voice States
   const [isListening, setIsListening] = useState(false);
@@ -129,7 +133,7 @@ export function InterviewQuestionView({
     const textToRead = `${question.title}. ${question.content}`;
     const utterance = new SpeechSynthesisUtterance(textToRead);
     utterance.lang = speechLang;
-    utterance.rate = 0.95; // Speaking speed
+    utterance.rate = 0.95;
 
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);
@@ -146,7 +150,6 @@ export function InterviewQuestionView({
       return;
     }
 
-    // Stop active speech recognition or synthesis
     if (isListening && recognitionRef.current) {
       recognitionRef.current.stop();
       setIsListening(false);
@@ -176,6 +179,7 @@ export function InterviewQuestionView({
     setEvaluationResult(null);
     setIsListening(false);
     setIsSpeaking(false);
+    setActiveInputMode('text');
     
     onNextQuestion(nextQ, nextIdx);
   };
@@ -243,74 +247,125 @@ export function InterviewQuestionView({
       {/* Answer Form & AI Evaluation State */}
       {!evaluationResult ? (
         <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-              Nhập câu trả lời phỏng vấn của bạn
-            </label>
-
-            <div className="flex items-center gap-3">
-              {/* Voice Language Switcher */}
-              <div className="flex items-center gap-1 text-[11px] bg-slate-100 dark:bg-slate-950 p-1 rounded-lg border border-slate-200 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setSpeechLang('vi-VN')}
-                  className={`px-2 py-0.5 rounded font-bold transition-all ${
-                    speechLang === 'vi-VN'
-                      ? 'bg-purple-600 text-white'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
-                  }`}
-                >
-                  🇻🇳 Tiếng Việt
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSpeechLang('en-US')}
-                  className={`px-2 py-0.5 rounded font-bold transition-all ${
-                    speechLang === 'en-US'
-                      ? 'bg-purple-600 text-white'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
-                  }`}
-                >
-                  🇺🇸 English
-                </button>
-              </div>
-
-              {/* Speech-to-Text Microphone Toggle Button */}
+          {/* Mode Switcher Header: Text/Voice vs Monaco Code Editor */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={toggleListening}
-                className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer ${
-                  isListening
-                    ? 'bg-rose-600 text-white border-rose-500 shadow-lg shadow-rose-600/30 animate-pulse'
-                    : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/20'
+                onClick={() => setActiveInputMode('text')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  activeInputMode === 'text'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <span>{isListening ? '🔴 Đang Thu Âm (Bấm để dừng)' : '🎙️ Nói Trực Tiếp'}</span>
+                ✍️ Trả Lời Văn Bản / Giọng Nói
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveInputMode('code')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  activeInputMode === 'code'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>💻 Viết & Chạy Code (VS Code)</span>
               </button>
             </div>
-          </div>
 
-          <div className="relative">
-            <textarea
-              required
-              rows={6}
-              disabled={isSubmitting}
-              value={userAnswer}
-              onChange={(e) => setUserAnswer(e.target.value)}
-              placeholder="Bạn có thể gõ văn bản hoặc bấm nút '🎙️ Nói Trực Tiếp' để micro tự động ghi âm lời nói của bạn..."
-              className={`w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-4 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 disabled:opacity-50 transition-colors ${
-                isListening
-                  ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500 bg-rose-500/5'
-                  : 'border-slate-200 dark:border-slate-800 focus:border-purple-500 focus:ring-purple-500'
-              }`}
-            />
-            {isListening && (
-              <div className="absolute bottom-3 right-3 flex items-center gap-2 bg-rose-950/80 border border-rose-500/40 text-rose-300 text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                <span>Micro đang nghe...</span>
+            {activeInputMode === 'text' && (
+              <div className="flex items-center gap-2">
+                {/* Voice Language Switcher */}
+                <div className="flex items-center gap-1 text-[11px] bg-slate-100 dark:bg-slate-950 p-1 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setSpeechLang('vi-VN')}
+                    className={`px-2 py-0.5 rounded font-bold transition-all ${
+                      speechLang === 'vi-VN'
+                        ? 'bg-purple-600 text-white'
+                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    🇻🇳 VN
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSpeechLang('en-US')}
+                    className={`px-2 py-0.5 rounded font-bold transition-all ${
+                      speechLang === 'en-US'
+                        ? 'bg-purple-600 text-white'
+                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    🇺🇸 EN
+                  </button>
+                </div>
+
+                {/* Speech-to-Text Button */}
+                <button
+                  type="button"
+                  onClick={toggleListening}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer ${
+                    isListening
+                      ? 'bg-rose-600 text-white border-rose-500 shadow-lg shadow-rose-600/30 animate-pulse'
+                      : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/20'
+                  }`}
+                >
+                  <span>{isListening ? '🔴 Đang Thu Âm' : '🎙️ Nói Trực Tiếp'}</span>
+                </button>
               </div>
             )}
           </div>
+
+          {/* Mode 1: Textarea & Voice Input */}
+          {activeInputMode === 'text' ? (
+            <div className="relative space-y-2">
+              <textarea
+                required
+                rows={6}
+                disabled={isSubmitting}
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                placeholder="Bạn có thể gõ giải thích hoặc bấm '🎙️ Nói Trực Tiếp' để micro tự ghi âm..."
+                className={`w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-4 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 disabled:opacity-50 transition-colors ${
+                  isListening
+                    ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500 bg-rose-500/5'
+                    : 'border-slate-200 dark:border-slate-800 focus:border-purple-500 focus:ring-purple-500'
+                }`}
+              />
+              {isListening && (
+                <div className="absolute bottom-3 right-3 flex items-center gap-2 bg-rose-950/80 border border-rose-500/40 text-rose-300 text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                  <span>Micro đang nghe...</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Mode 2: Live Monaco Code Editor & Runner */
+            <div className="space-y-4">
+              <CodeSandboxEditor
+                onAppendCodeToAnswer={(snippet) => {
+                  setUserAnswer((prev) => prev + snippet);
+                  setActiveInputMode('text');
+                }}
+              />
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">
+                  Nội dung câu trả lời hoàn chỉnh (Sẽ gửi tới AI):
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={userAnswer}
+                  onChange={(e) => setUserAnswer(e.target.value)}
+                  placeholder="Đoạn code của bạn sẽ được chèn vào đây. Bạn có thể bổ sung thêm giải thích trước khi bấm gửi AI..."
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+            </div>
+          )}
 
           <button
             type="submit"
@@ -337,20 +392,20 @@ export function InterviewQuestionView({
         /* AI Evaluation Result Card */
         <div className="space-y-6 animate-fade-in">
           {/* AI Feedback Banner */}
-          <div className="bg-gradient-to-br from-purple-900/20 via-slate-900 to-blue-900/20 border border-purple-500/30 rounded-2xl p-6 shadow-xl space-y-6 relative overflow-hidden backdrop-blur-md">
+          <div className="bg-gradient-to-br from-purple-500/10 via-white to-blue-500/10 dark:from-purple-900/20 dark:via-slate-900 dark:to-blue-900/20 border border-purple-500/30 rounded-2xl p-6 shadow-xl space-y-6 relative overflow-hidden backdrop-blur-md">
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -z-10 pointer-events-none" />
 
             {/* AI Score Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-purple-500/20 pb-4 gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-xl">
+                <div className="w-10 h-10 rounded-xl bg-purple-600/10 dark:bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-xl">
                   ✨
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     Đánh giá từ AI Tech Lead
                   </h3>
-                  <p className="text-xs text-purple-300/80">
+                  <p className="text-xs text-purple-600 dark:text-purple-300/80">
                     Phân tích tự động dựa trên Gemini 2.5 AI Model
                   </p>
                 </div>
@@ -358,17 +413,17 @@ export function InterviewQuestionView({
 
               {/* Score Badges */}
               {ai && (
-                <div className="flex items-center gap-3 bg-purple-950/60 p-2 rounded-xl border border-purple-500/30">
+                <div className="flex items-center gap-3 bg-white dark:bg-purple-950/60 p-2 rounded-xl border border-purple-500/30 shadow-sm">
                   <div className="text-right">
-                    <div className="text-[10px] uppercase font-bold tracking-wider text-purple-300">Điểm AI</div>
-                    <div className="text-lg font-black text-purple-400">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 dark:text-purple-300">Điểm AI</div>
+                    <div className="text-lg font-black text-purple-600 dark:text-purple-400">
                       {ai.scorePercent}%
                     </div>
                   </div>
                   <div className="h-8 w-px bg-purple-500/20" />
                   <div className="text-left">
-                    <div className="text-[10px] uppercase font-bold tracking-wider text-purple-300">Xếp loại</div>
-                    <div className="text-xs font-bold text-emerald-400">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-purple-600 dark:text-purple-300">Xếp loại</div>
+                    <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
                       {ai.rating >= 4 ? '⭐️⭐️⭐️⭐️⭐️ Xuất sắc' : ai.rating >= 3 ? '⭐️⭐️⭐️ Khá tốt' : '⚠️ Cần cố gắng'}
                     </div>
                   </div>
@@ -378,11 +433,11 @@ export function InterviewQuestionView({
 
             {/* AI Feedback Overview */}
             {ai?.aiFeedback && (
-              <div className="bg-slate-950/80 p-4 rounded-xl border border-purple-500/20 space-y-2">
-                <span className="text-[11px] font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
+              <div className="bg-white/80 dark:bg-slate-950/80 p-4 rounded-xl border border-purple-500/20 space-y-2 shadow-sm">
+                <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
                   📝 Nhận xét của Chuyên gia AI:
                 </span>
-                <p className="text-xs text-slate-200 leading-relaxed">
+                <p className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed">
                   {ai.aiFeedback}
                 </p>
               </div>
@@ -392,39 +447,39 @@ export function InterviewQuestionView({
             {ai && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Strengths */}
-                <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-4 space-y-2">
-                  <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-4 space-y-2">
+                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                     <span>✓</span> Điểm tốt trong câu trả lời:
                   </span>
                   <ul className="space-y-1.5">
                     {ai.strengths && ai.strengths.length > 0 ? (
                       ai.strengths.map((item, idx) => (
-                        <li key={idx} className="text-xs text-emerald-200/90 flex items-start gap-2">
-                          <span className="text-emerald-400 font-bold">•</span>
+                        <li key={idx} className="text-xs text-slate-800 dark:text-emerald-200/90 flex items-start gap-2">
+                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">•</span>
                           <span>{item}</span>
                         </li>
                       ))
                     ) : (
-                      <li className="text-xs text-slate-400 italic">Chưa ghi nhận điểm sáng nổi bật.</li>
+                      <li className="text-xs text-slate-500 dark:text-slate-400 italic">Chưa ghi nhận điểm sáng nổi bật.</li>
                     )}
                   </ul>
                 </div>
 
                 {/* Improvements */}
-                <div className="bg-amber-950/30 border border-amber-500/20 rounded-xl p-4 space-y-2">
-                  <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 rounded-xl p-4 space-y-2">
+                  <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                     <span>💡</span> Cần bổ sung / Cải thiện:
                   </span>
                   <ul className="space-y-1.5">
                     {ai.improvements && ai.improvements.length > 0 ? (
                       ai.improvements.map((item, idx) => (
-                        <li key={idx} className="text-xs text-amber-200/90 flex items-start gap-2">
-                          <span className="text-amber-400 font-bold">•</span>
+                        <li key={idx} className="text-xs text-slate-800 dark:text-amber-200/90 flex items-start gap-2">
+                          <span className="text-amber-600 dark:text-amber-400 font-bold">•</span>
                           <span>{item}</span>
                         </li>
                       ))
                     ) : (
-                      <li className="text-xs text-emerald-400 italic">Không có thiếu sót lớn nào!</li>
+                      <li className="text-xs text-emerald-600 dark:text-emerald-400 italic">Không có thiếu sót lớn nào!</li>
                     )}
                   </ul>
                 </div>
@@ -433,36 +488,37 @@ export function InterviewQuestionView({
 
             {/* AI Suggested Answer */}
             {ai?.suggestedAnswer && (
-              <div className="bg-slate-950/90 p-4 rounded-xl border border-blue-500/20 space-y-2">
-                <span className="text-[11px] font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
+              <div className="bg-white/80 dark:bg-slate-950/90 p-4 rounded-xl border border-blue-500/20 space-y-2 shadow-sm">
+                <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
                   🌟 Gợi ý câu trả lời chuẩn mực từ AI:
                 </span>
-                <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line bg-blue-950/20 p-3 rounded-lg border border-blue-500/10">
+                <p className="text-xs text-slate-800 dark:text-slate-300 leading-relaxed whitespace-pre-line bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg border border-blue-500/10">
                   {ai.suggestedAnswer}
                 </p>
               </div>
             )}
 
             {/* User Submitted Answer Review */}
-            <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-1">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">Câu trả lời bạn đã gửi:</span>
-              <p className="text-xs text-slate-300 whitespace-pre-line">{userAnswer}</p>
+            <div className="bg-white/60 dark:bg-slate-950/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1 shadow-sm">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Câu trả lời bạn đã gửi:</span>
+              <p className="text-xs text-slate-800 dark:text-slate-300 whitespace-pre-line">{userAnswer}</p>
             </div>
 
             {/* Canonical Answer from Database */}
             {question.answer && (
-              <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-2">
-                <span className="text-[10px] font-bold text-emerald-400 uppercase">Đáp án hệ thống mẫu:</span>
-                <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
+              <div className="bg-white/60 dark:bg-slate-950/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2 shadow-sm">
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Đáp án hệ thống mẫu:</span>
+                <p className="text-xs text-slate-800 dark:text-slate-300 leading-relaxed whitespace-pre-line">
                   {question.answer.content}
                 </p>
                 {question.answer.codeSnippet && (
-                  <pre className="p-3 text-xs font-mono text-cyan-300 bg-slate-900 rounded-lg overflow-x-auto border border-slate-800 mt-2">
+                  <pre className="p-3 text-xs font-mono text-cyan-600 dark:text-cyan-300 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-x-auto border border-slate-200 dark:border-slate-800 mt-2">
                     <code>{question.answer.codeSnippet}</code>
                   </pre>
                 )}
               </div>
             )}
+
 
             {/* Action button to proceed */}
             <button

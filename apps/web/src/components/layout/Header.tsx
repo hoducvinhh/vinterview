@@ -41,6 +41,7 @@ export function Header() {
     { label: 'Trang chủ', href: '/' },
     { label: 'Câu hỏi', href: '/questions' },
     { label: 'Luyện phỏng vấn', href: '/interview' },
+    { label: '☕️ Donate', href: '/donate', isHighlight: true },
     ...(isAuthenticated
       ? [
           { label: 'Tổng quan', href: '/dashboard' },
@@ -68,6 +69,22 @@ export function Header() {
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
+              if (item.isHighlight) {
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all border ${
+                      isActive
+                        ? 'bg-rose-600 text-white border-rose-500 shadow-md shadow-rose-600/20'
+                        : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20 hover:bg-rose-500/20'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              }
+
               return (
                 <Link
                   key={item.href}
@@ -83,6 +100,7 @@ export function Header() {
               );
             })}
           </nav>
+
         </div>
 
         {/* Right Section: Search, Theme Toggle & Auth */}

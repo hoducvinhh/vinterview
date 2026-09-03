@@ -103,27 +103,28 @@ export function InterviewResultView({ result, onRetry }: InterviewResultViewProp
 
               {/* AI Feedback Box */}
               {q.aiEvaluation && (
-                <div className="bg-purple-950/20 border border-purple-500/20 rounded-xl p-4 space-y-2">
-                  <div className="text-xs font-bold text-purple-400 flex items-center gap-1.5">
+                <div className="bg-purple-500/10 dark:bg-purple-950/20 border border-purple-500/20 rounded-xl p-4 space-y-2">
+                  <div className="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
                     <span>🤖 AI Feedback:</span>
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
+                  <p className="text-xs text-slate-800 dark:text-slate-300 leading-relaxed">
                     {q.aiEvaluation.aiFeedback}
                   </p>
                   
                   {q.aiEvaluation.strengths && q.aiEvaluation.strengths.length > 0 && (
-                    <div className="text-xs text-emerald-400 font-semibold pt-1">
+                    <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold pt-1">
                       ✓ Điểm mạnh: {q.aiEvaluation.strengths.join(', ')}
                     </div>
                   )}
 
                   {q.aiEvaluation.improvements && q.aiEvaluation.improvements.length > 0 && (
-                    <div className="text-xs text-amber-400 font-semibold">
+                    <div className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
                       💡 Cần bổ sung: {q.aiEvaluation.improvements.join(', ')}
                     </div>
                   )}
                 </div>
               )}
+
             </div>
           ))}
         </div>

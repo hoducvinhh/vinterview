@@ -26,9 +26,9 @@ export declare class TechnologiesService {
             };
             id: string;
             name: string;
-            slug: string;
             createdAt: Date;
             updatedAt: Date;
+            slug: string;
             icon: string | null;
         };
     }>;
@@ -38,9 +38,9 @@ export declare class TechnologiesService {
         data: {
             id: string;
             name: string;
-            slug: string;
             createdAt: Date;
             updatedAt: Date;
+            slug: string;
             icon: string | null;
         };
     }>;
@@ -50,9 +50,9 @@ export declare class TechnologiesService {
         data: {
             id: string;
             name: string;
-            slug: string;
             createdAt: Date;
             updatedAt: Date;
+            slug: string;
             icon: string | null;
         };
     }>;

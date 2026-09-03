@@ -19,17 +19,17 @@ export declare class InterviewController {
                 category: {
                     id: string;
                     name: string;
-                    slug: string;
-                    description: string | null;
                     createdAt: Date;
                     updatedAt: Date;
+                    slug: string;
+                    description: string | null;
                 };
                 technology: {
                     id: string;
                     name: string;
-                    slug: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    slug: string;
                     icon: string | null;
                 };
             };

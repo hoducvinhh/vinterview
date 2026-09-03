@@ -25,9 +25,9 @@ export declare class TechnologiesController {
             };
             id: string;
             name: string;
-            slug: string;
             createdAt: Date;
             updatedAt: Date;
+            slug: string;
             icon: string | null;
         };
     }>;
@@ -37,9 +37,9 @@ export declare class TechnologiesController {
         data: {
             id: string;
             name: string;
-            slug: string;
             createdAt: Date;
             updatedAt: Date;
+            slug: string;
             icon: string | null;
         };
     }>;
@@ -49,9 +49,9 @@ export declare class TechnologiesController {
         data: {
             id: string;
             name: string;
-            slug: string;
             createdAt: Date;
             updatedAt: Date;
+            slug: string;
             icon: string | null;
         };
     }>;

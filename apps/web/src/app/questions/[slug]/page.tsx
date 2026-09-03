@@ -128,16 +128,17 @@ export default async function QuestionDetailPage({ params }: PageProps) {
 
             {/* Code Snippet Display */}
             {question.answer.codeSnippet && (
-              <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-inner">
-                <div className="bg-slate-900 px-4 py-2 text-xs font-mono text-slate-400 border-b border-slate-800 flex items-center justify-between">
+              <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-inner">
+                <div className="bg-slate-950/80 px-4 py-2 text-xs font-mono text-slate-400 border-b border-slate-800 flex items-center justify-between">
                   <span>Mã Code Minh Họa</span>
-                  <span className="text-[10px] text-slate-500 uppercase">{question.technology.name}</span>
+                  <span className="text-[10px] text-slate-400 uppercase">{question.technology.name}</span>
                 </div>
                 <pre className="p-4 sm:p-6 text-xs sm:text-sm font-mono text-cyan-300 overflow-x-auto leading-relaxed">
                   <code>{question.answer.codeSnippet}</code>
                 </pre>
               </div>
             )}
+
 
             {/* Explanation Deep Dive */}
             {question.answer.explanation && (

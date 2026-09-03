@@ -13,15 +13,14 @@ export interface AiEvaluationResult {
 @Injectable()
 export class AiEvaluatorService {
   private readonly logger = new Logger(AiEvaluatorService.name);
-  private aiClient: GoogleGenAI | null = null;
 
-  constructor() {
+  private getAiClient(): GoogleGenAI | null {
     const apiKey = process.env.GEMINI_API_KEY;
-    if (apiKey) {
-      this.aiClient = new GoogleGenAI({ apiKey });
-    } else {
+    if (!apiKey) {
       this.logger.warn('GEMINI_API_KEY is not configured in environment variables.');
+      return null;
     }
+    return new GoogleGenAI({ apiKey });
   }
 
   async evaluateAnswer(params: {
@@ -32,10 +31,13 @@ export class AiEvaluatorService {
   }): Promise<AiEvaluationResult> {
     const { questionTitle, questionContent, canonicalAnswer, userAnswer } = params;
 
+    const aiClient = this.getAiClient();
+
     // Fallback if AI client is unavailable or userAnswer is empty
-    if (!this.aiClient) {
+    if (!aiClient) {
       return this.getFallbackEvaluation('Chưa cấu hình GEMINI_API_KEY.');
     }
+
 
     if (!userAnswer || !userAnswer.trim()) {
       return {
@@ -71,7 +73,8 @@ YÊU CẦU:
 `;
 
     try {
-      const response = await this.aiClient.models.generateContent({
+      const response = await aiClient.models.generateContent({
+
         model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
