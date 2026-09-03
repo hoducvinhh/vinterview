@@ -46,34 +46,6 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Demo Account Quick Fill Helper */}
-        <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            💡 Tài khoản Demo có sẵn:
-          </span>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('user@vinterview.com');
-                setPassword('Password123!');
-              }}
-              className="flex-1 py-1.5 px-2 text-[11px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-500/20 hover:bg-blue-500/20 transition-all cursor-pointer"
-            >
-              👤 Candidate User
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('admin@vinterview.com');
-                setPassword('Password123!');
-              }}
-              className="flex-1 py-1.5 px-2 text-[11px] font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg border border-purple-500/20 hover:bg-purple-500/20 transition-all cursor-pointer"
-            >
-              👑 Admin User
-            </button>
-          </div>
-        </div>
 
 
         <form onSubmit={handleSubmit} className="space-y-4">
