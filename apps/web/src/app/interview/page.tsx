@@ -143,7 +143,7 @@ export default function InterviewPage() {
           isOpen={showAuthModal}
           onClose={() => setShowAuthModal(false)}
           title="🤖 Phỏng Vấn Giả Lập & Phân Tích CV Bằng AI"
-          description="Vui lòng đăng nhập hoặc đăng ký tài khoản miễn phí để khởi tạo phiên phỏng vấn tương tác với AI Gemini."
+          description="Vui lòng đăng nhập hoặc đăng ký tài khoản miễn phí để khởi tạo phiên phỏng vấn tương tác với AI."
           icon="🤖"
         />
       </div>

@@ -23,7 +23,7 @@ export default function Home() {
     {
       icon: '⚡',
       title: 'Đáp Án Chuẩn Production & AI Feedback',
-      desc: 'Mỗi câu hỏi kèm giải thích ngắn gọn, minh họa code rõ ràng và nhận xét chấm điểm chi tiết từ AI Gemini để giúp sinh viên tiến bộ nhanh chóng.',
+      desc: 'Mỗi câu hỏi kèm giải thích ngắn gọn, minh họa code rõ ràng và nhận xét chấm điểm chi tiết từ AI để giúp sinh viên tiến bộ nhanh chóng.',
     },
   ];
 

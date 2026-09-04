@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Phỏng Vấn Giả Lập AI & Phân Tích CV IT — Vinterview',
   description:
-    'Luyện phỏng vấn giả lập thời gian thực với AI Gemini. Phân tích file CV PDF cá nhân, trích xuất kỹ năng và sinh bộ câu hỏi phỏng vấn trúng đích cho sinh viên IT & Fresher.',
+    'Luyện phỏng vấn giả lập thời gian thực với AI. Phân tích file CV PDF cá nhân, trích xuất kỹ năng và sinh bộ câu hỏi phỏng vấn trúng đích cho sinh viên IT & Fresher.',
   keywords: [
     'phỏng vấn giả lập AI',
     'phỏng vấn theo CV IT',
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Phỏng Vấn Giả Lập AI & Phân Tích CV IT — Vinterview',
     description:
-      'Luyện phỏng vấn giả lập thời gian thực với AI Gemini. Tải CV PDF của bạn để nhận đánh giá điểm mạnh, điểm yếu và gợi ý bộ câu hỏi phỏng vấn phù hợp.',
+      'Luyện phỏng vấn giả lập thời gian thực với AI. Tải CV PDF của bạn để nhận đánh giá điểm mạnh, điểm yếu và gợi ý bộ câu hỏi phỏng vấn phù hợp.',
     url: '/interview',
     type: 'website',
   },
