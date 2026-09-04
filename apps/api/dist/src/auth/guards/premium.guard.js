@@ -23,30 +23,6 @@ let PremiumGuard = class PremiumGuard {
         if (!user || !user.id) {
             throw new common_1.ForbiddenException('Bạn cần đăng nhập để truy cập tính năng này.');
         }
-        const dbUser = await this.prisma.user.findUnique({
-            where: { id: user.id },
-            select: { isPremium: true, premiumExpiresAt: true, role: true },
-        });
-        if (!dbUser) {
-            throw new common_1.ForbiddenException('Người dùng không tồn tại.');
-        }
-        if (dbUser.role === 'ADMIN') {
-            return true;
-        }
-        if (!dbUser.isPremium) {
-            throw new common_1.ForbiddenException({
-                message: 'Tính năng Phân tích CV bằng AI là tính năng dành riêng cho tài khoản Premium. Vui lòng nâng cấp tài khoản để sử dụng!',
-                isPremiumRequired: true,
-                code: 'PREMIUM_REQUIRED',
-            });
-        }
-        if (dbUser.premiumExpiresAt && new Date(dbUser.premiumExpiresAt) < new Date()) {
-            throw new common_1.ForbiddenException({
-                message: 'Gói Premium của bạn đã hết hạn. Vui lòng gia hạn để tiếp tục sử dụng tính năng này!',
-                isPremiumRequired: true,
-                code: 'PREMIUM_EXPIRED',
-            });
-        }
         return true;
     }
 };
