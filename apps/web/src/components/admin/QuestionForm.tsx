@@ -106,7 +106,7 @@ export function QuestionForm({ mode, initialData }: QuestionFormProps) {
 
   if (loadingOptions) {
     return (
-      <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-8 text-center text-xs text-slate-400 animate-pulse">
+      <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center text-xs text-slate-500 dark:text-slate-400 animate-pulse">
         Loading category and technology options...
       </div>
     );
@@ -115,21 +115,21 @@ export function QuestionForm({ mode, initialData }: QuestionFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-xs font-semibold">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-4 rounded-xl text-xs font-semibold">
           {error}
         </div>
       )}
 
       {/* Question Details Card */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 space-y-4">
-        <h2 className="text-sm font-bold text-slate-200 border-b border-slate-800 pb-3">
+      <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-4 shadow-xs">
+        <h2 className="text-sm font-bold text-slate-900 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800 pb-3">
           1. Question Statement & Metadata
         </h2>
 
         {/* Title */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1">
-            Question Title <span className="text-rose-400">*</span>
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            Question Title <span className="text-rose-500 dark:text-rose-400">*</span>
           </label>
           <input
             type="text"
@@ -137,37 +137,37 @@ export function QuestionForm({ mode, initialData }: QuestionFormProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. What is the Event Loop in JavaScript?"
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500"
           />
         </div>
 
         {/* Optional Custom Slug */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1">
-            Custom URL Slug <span className="text-slate-500 font-normal">(Optional - auto-generated if left empty)</span>
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            Custom URL Slug <span className="text-slate-400 dark:text-slate-500 font-normal">(Optional - auto-generated if left empty)</span>
           </label>
           <input
             type="text"
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
             placeholder="e.g. what-is-event-loop-js"
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
           />
         </div>
 
         {/* Category, Technology, Difficulty Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Category <span className="text-rose-400">*</span>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Category <span className="text-rose-500 dark:text-rose-400">*</span>
             </label>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
             >
               {categories.map((c) => (
-                <option key={c.id} value={c.id}>
+                <option key={c.id} value={c.id} className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200">
                   {c.name}
                 </option>
               ))}
@@ -175,16 +175,16 @@ export function QuestionForm({ mode, initialData }: QuestionFormProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Technology <span className="text-rose-400">*</span>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Technology <span className="text-rose-500 dark:text-rose-400">*</span>
             </label>
             <select
               value={technologyId}
               onChange={(e) => setTechnologyId(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
             >
               {technologies.map((t) => (
-                <option key={t.id} value={t.id}>
+                <option key={t.id} value={t.id} className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200">
                   {t.name}
                 </option>
               ))}
@@ -192,25 +192,25 @@ export function QuestionForm({ mode, initialData }: QuestionFormProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Difficulty Level <span className="text-rose-400">*</span>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Difficulty Level <span className="text-rose-500 dark:text-rose-400">*</span>
             </label>
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value as any)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
             >
-              <option value="EASY">EASY</option>
-              <option value="MEDIUM">MEDIUM</option>
-              <option value="HARD">HARD</option>
+              <option value="EASY" className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200">EASY</option>
+              <option value="MEDIUM" className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200">MEDIUM</option>
+              <option value="HARD" className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200">HARD</option>
             </select>
           </div>
         </div>
 
         {/* Content Statement Markdown */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1">
-            Question Statement (Markdown) <span className="text-rose-400">*</span>
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            Question Statement (Markdown) <span className="text-rose-500 dark:text-rose-400">*</span>
           </label>
           <textarea
             required
@@ -218,21 +218,21 @@ export function QuestionForm({ mode, initialData }: QuestionFormProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Explain how the Call Stack and Event Loop interact with Promises..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg p-3 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500"
           />
         </div>
       </div>
 
       {/* Answer Details Card */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6 space-y-4">
-        <h2 className="text-sm font-bold text-slate-200 border-b border-slate-800 pb-3">
+      <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-4 shadow-xs">
+        <h2 className="text-sm font-bold text-slate-900 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800 pb-3">
           2. Verified Solution & Code Example
         </h2>
 
         {/* Solution Content */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1">
-            Solution Text <span className="text-rose-400">*</span>
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            Solution Text <span className="text-rose-500 dark:text-rose-400">*</span>
           </label>
           <textarea
             required
@@ -240,35 +240,35 @@ export function QuestionForm({ mode, initialData }: QuestionFormProps) {
             value={answerContent}
             onChange={(e) => setAnswerContent(e.target.value)}
             placeholder="JavaScript is single-threaded and uses an event-driven loop to process non-blocking I/O..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg p-3 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500"
           />
         </div>
 
         {/* Code Snippet */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1">
-            Code Snippet <span className="text-slate-500 font-normal">(Optional)</span>
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            Code Snippet <span className="text-slate-400 dark:text-slate-500 font-normal">(Optional)</span>
           </label>
           <textarea
             rows={4}
             value={codeSnippet}
             onChange={(e) => setCodeSnippet(e.target.value)}
             placeholder="setTimeout(() => console.log('Done'), 0);"
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs font-mono text-cyan-300 focus:outline-none focus:border-blue-500"
+            className="w-full bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs font-mono text-cyan-400 dark:text-cyan-300 focus:outline-none focus:border-blue-500"
           />
         </div>
 
         {/* Explanation */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1">
-            Deep-Dive Explanation <span className="text-slate-500 font-normal">(Optional)</span>
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            Deep-Dive Explanation <span className="text-slate-400 dark:text-slate-500 font-normal">(Optional)</span>
           </label>
           <textarea
             rows={3}
             value={explanation}
             onChange={(e) => setExplanation(e.target.value)}
             placeholder="Microtasks have higher priority than Macrotasks in V8 engine..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg p-3 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500"
           />
         </div>
       </div>
@@ -278,7 +278,7 @@ export function QuestionForm({ mode, initialData }: QuestionFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white bg-slate-950 border border-slate-800 rounded-lg hover:bg-slate-800 transition-colors"
+          className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
         >
           Cancel
         </button>
