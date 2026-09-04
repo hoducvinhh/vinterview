@@ -15,19 +15,33 @@ interface BookmarkButtonProps {
 
 export function BookmarkButton({
   questionId,
-  initialIsBookmarked = false,
+  initialIsBookmarked,
   size = 'md',
   onRemoveBookmark,
   onToggleBookmark,
 }: BookmarkButtonProps) {
   const { isAuthenticated } = useAuth();
-  const [isBookmarked, setIsBookmarked] = useState(initialIsBookmarked);
+  const [isBookmarked, setIsBookmarked] = useState<boolean>(!!initialIsBookmarked);
   const [loading, setLoading] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
-    setIsBookmarked(initialIsBookmarked);
-  }, [initialIsBookmarked]);
+    if (initialIsBookmarked !== undefined) {
+      setIsBookmarked(initialIsBookmarked);
+      return;
+    }
+
+    if (isAuthenticated) {
+      api
+        .getUserBookmarkIds()
+        .then((ids) => {
+          if (Array.isArray(ids)) {
+            setIsBookmarked(ids.includes(questionId));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [initialIsBookmarked, questionId, isAuthenticated]);
 
   const handleToggleBookmark = async (e: React.MouseEvent) => {
     e.preventDefault();

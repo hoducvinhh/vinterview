@@ -39,7 +39,10 @@ export class BookmarksService {
     } catch (error: any) {
       // Prisma unique constraint violation code
       if (error.code === 'P2002') {
-        throw new ConflictException('Question is already bookmarked.');
+        return {
+          success: true,
+          message: 'Question is already bookmarked.',
+        };
       }
       throw error;
     }
@@ -56,7 +59,10 @@ export class BookmarksService {
     });
 
     if (!existingBookmark) {
-      throw new NotFoundException('Bookmark not found for this question.');
+      return {
+        success: true,
+        message: 'Bookmark removed successfully',
+      };
     }
 
     await this.prisma.bookmark.delete({

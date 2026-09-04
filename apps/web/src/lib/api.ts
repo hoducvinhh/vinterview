@@ -445,17 +445,47 @@ class ApiClient {
     return this.get<{ success: boolean; data: UserProgressData }>('/users/me/progress');
   }
 
+  private bookmarkIdsCache: string[] | null = null;
+  private bookmarkIdsPromise: Promise<string[]> | null = null;
+
   // Bookmarks
   async bookmarkQuestion(questionId: string): Promise<{ success: boolean; message: string }> {
+    this.clearBookmarkCache();
     return this.post<{ success: boolean; message: string }>(`/questions/${questionId}/bookmark`);
   }
 
   async unbookmarkQuestion(questionId: string): Promise<{ success: boolean; message: string }> {
+    this.clearBookmarkCache();
     return this.delete<{ success: boolean; message: string }>(`/questions/${questionId}/bookmark`);
   }
 
   async getUserBookmarks(): Promise<{ success: boolean; data: Question[] }> {
     return this.get<{ success: boolean; data: Question[] }>('/users/me/bookmarks');
+  }
+
+  async getUserBookmarkIds(forceRefresh = false): Promise<string[]> {
+    if (!forceRefresh && this.bookmarkIdsCache) {
+      return this.bookmarkIdsCache;
+    }
+    if (!forceRefresh && this.bookmarkIdsPromise) {
+      return this.bookmarkIdsPromise;
+    }
+    this.bookmarkIdsPromise = this.get<{ success: boolean; data: string[] }>('/users/me/bookmarks/ids')
+      .then((res) => {
+        this.bookmarkIdsCache = res.data || [];
+        this.bookmarkIdsPromise = null;
+        return this.bookmarkIdsCache;
+      })
+      .catch(() => {
+        this.bookmarkIdsPromise = null;
+        return [];
+      });
+    return this.bookmarkIdsPromise;
+  }
+
+  clearBookmarkCache() {
+    this.bookmarkIdsCache = null;
+    this.bookmarkIdsPromise = null;
   }
 
   // Health
