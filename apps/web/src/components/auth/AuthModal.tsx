@@ -74,7 +74,7 @@ export function AuthModal({
             href="/login"
             className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold text-center block shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 transition-all"
           >
-            🔑 Đăng Nhập Ngay &rarr;
+            🔑 Đăng Nhập Ngay
           </Link>
           <Link
             href="/register"

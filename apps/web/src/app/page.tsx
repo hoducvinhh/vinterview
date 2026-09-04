@@ -48,7 +48,7 @@ export default function Home() {
             href="/questions"
             className="px-6 py-3 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg shadow-blue-600/25 transition-all hover:shadow-blue-600/40"
           >
-            Khám Phá Ngân Hàng Câu Hỏi &rarr;
+            Khám Phá Ngân Hàng Câu Hỏi
           </Link>
           <Link
             href="/interview"
@@ -98,7 +98,7 @@ export default function Home() {
             </p>
           </div>
           <Link href="/questions" className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold">
-            Xem tất cả &rarr;
+            Xem tất cả
           </Link>
         </div>
 

@@ -121,7 +121,7 @@ export function PremiumModal({ isOpen, onClose, onSuccess }: PremiumModalProps) 
             ) : (
               <>
                 <span>💳 Thanh Toán Qua PayOS (Mã VietQR Ngân Hàng)</span>
-                <span>&rarr;</span>
+                <span></span>
               </>
             )}
           </button>

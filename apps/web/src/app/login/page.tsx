@@ -82,7 +82,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full py-2.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-md shadow-blue-600/20 transition-all disabled:opacity-50 cursor-pointer"
           >
-            {loading ? 'Đang đăng nhập...' : 'Đăng Nhập &rarr;'}
+            {loading ? 'Đang đăng nhập...' : 'Đăng Nhập '}
           </button>
         </form>
 

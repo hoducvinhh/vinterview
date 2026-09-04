@@ -121,7 +121,7 @@ export default function BookmarksPage() {
             href="/questions"
             className="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg inline-block transition-colors"
           >
-            Khám phá câu hỏi ngay &rarr;
+            Khám phá câu hỏi ngay
           </Link>
         </div>
       )}

@@ -69,22 +69,20 @@ export function InterviewSetup({ onStart, isStarting }: InterviewSetupProps) {
         <button
           type="button"
           onClick={() => setActiveTab('standard')}
-          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
-            activeTab === 'standard'
+          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${activeTab === 'standard'
               ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-md'
               : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-          }`}
+            }`}
         >
           <span>🎯 Theo Chủ Đề & Công Nghệ</span>
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('cv')}
-          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
-            activeTab === 'cv'
+          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${activeTab === 'cv'
               ? 'bg-purple-600 text-white shadow-md'
               : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-          }`}
+            }`}
         >
           <span>📄 Phân Tích CV Bằng AI (Mới)</span>
           <span className="bg-amber-400 text-slate-950 text-[10px] font-extrabold px-1.5 py-0.5 rounded-full uppercase">
@@ -175,7 +173,7 @@ export function InterviewSetup({ onStart, isStarting }: InterviewSetupProps) {
             disabled={isStarting || loading}
             className="w-full py-3 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow-lg shadow-blue-600/25 disabled:opacity-50 transition-all hover:shadow-blue-600/40 cursor-pointer"
           >
-            {isStarting ? 'Đang khởi tạo bộ câu hỏi...' : 'Bắt Đầu Luyện Phỏng Vấn Ngay &rarr;'}
+            {isStarting ? 'Đang khởi tạo bộ câu hỏi...' : 'Bắt Đầu Luyện Phỏng Vấn Ngay '}
           </button>
         </form>
       )}

@@ -37,8 +37,8 @@ export function QuestionCard({
     difficulty === 'EASY'
       ? 'easy'
       : difficulty === 'MEDIUM'
-      ? 'medium'
-      : 'hard';
+        ? 'medium'
+        : 'hard';
 
   const handleCardClick = (e: React.MouseEvent) => {
     if (!isAuthenticated) {
@@ -90,7 +90,7 @@ export function QuestionCard({
             onClick={handleCardClick}
             className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
           >
-            Xem chi tiết &rarr;
+            Xem chi tiết
           </Link>
         </div>
       </div>

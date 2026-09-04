@@ -39,7 +39,7 @@ export function InterviewQuestionView({
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speechLang, setSpeechLang] = useState<'vi-VN' | 'en-US'>('vi-VN');
-  
+
   const recognitionRef = useRef<any>(null);
 
   // Cleanup speech synthesis & recognition on unmount or question change
@@ -53,7 +53,7 @@ export function InterviewQuestionView({
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch (_) {}
+        } catch (_) { }
       }
     };
   }, [question.id]);
@@ -173,14 +173,14 @@ export function InterviewQuestionView({
   const handleProceedNext = () => {
     const nextQ = evaluationResult?.nextQuestion;
     const nextIdx = evaluationResult?.nextIndex;
-    
+
     // Reset component local state
     setUserAnswer('');
     setEvaluationResult(null);
     setIsListening(false);
     setIsSpeaking(false);
     setActiveInputMode('text');
-    
+
     onNextQuestion(nextQ, nextIdx);
   };
 
@@ -188,8 +188,8 @@ export function InterviewQuestionView({
     question.difficulty === 'EASY'
       ? 'easy'
       : question.difficulty === 'MEDIUM'
-      ? 'medium'
-      : 'hard';
+        ? 'medium'
+        : 'hard';
 
   const progressPercent = Math.round(((currentIndex + 1) / totalQuestions) * 100);
   const ai = evaluationResult?.aiEvaluation;
@@ -228,11 +228,10 @@ export function InterviewQuestionView({
           <button
             type="button"
             onClick={toggleReadQuestion}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
-              isSpeaking
+            className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${isSpeaking
                 ? 'bg-rose-500/10 text-rose-600 border-rose-500/30 animate-pulse'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-purple-500'
-            }`}
+              }`}
             title="Đọc câu hỏi bằng giọng nói"
           >
             <span>{isSpeaking ? '⏹ Dừng Đọc' : '🔊 Đọc Câu Hỏi'}</span>
@@ -253,11 +252,10 @@ export function InterviewQuestionView({
               <button
                 type="button"
                 onClick={() => setActiveInputMode('text')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeInputMode === 'text'
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${activeInputMode === 'text'
                     ? 'bg-purple-600 text-white shadow-sm'
                     : 'bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
+                  }`}
               >
                 ✍️ Trả Lời Văn Bản / Giọng Nói
               </button>
@@ -265,11 +263,10 @@ export function InterviewQuestionView({
               <button
                 type="button"
                 onClick={() => setActiveInputMode('code')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                  activeInputMode === 'code'
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${activeInputMode === 'code'
                     ? 'bg-emerald-600 text-white shadow-sm'
                     : 'bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
+                  }`}
               >
                 <span>💻 Viết & Chạy Code (VS Code)</span>
               </button>
@@ -282,22 +279,20 @@ export function InterviewQuestionView({
                   <button
                     type="button"
                     onClick={() => setSpeechLang('vi-VN')}
-                    className={`px-2 py-0.5 rounded font-bold transition-all ${
-                      speechLang === 'vi-VN'
+                    className={`px-2 py-0.5 rounded font-bold transition-all ${speechLang === 'vi-VN'
                         ? 'bg-purple-600 text-white'
                         : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
-                    }`}
+                      }`}
                   >
                     🇻🇳 VN
                   </button>
                   <button
                     type="button"
                     onClick={() => setSpeechLang('en-US')}
-                    className={`px-2 py-0.5 rounded font-bold transition-all ${
-                      speechLang === 'en-US'
+                    className={`px-2 py-0.5 rounded font-bold transition-all ${speechLang === 'en-US'
                         ? 'bg-purple-600 text-white'
                         : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
-                    }`}
+                      }`}
                   >
                     🇺🇸 EN
                   </button>
@@ -307,11 +302,10 @@ export function InterviewQuestionView({
                 <button
                   type="button"
                   onClick={toggleListening}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer ${
-                    isListening
+                  className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer ${isListening
                       ? 'bg-rose-600 text-white border-rose-500 shadow-lg shadow-rose-600/30 animate-pulse'
                       : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/20'
-                  }`}
+                    }`}
                 >
                   <span>{isListening ? '🔴 Đang Thu Âm' : '🎙️ Nói Trực Tiếp'}</span>
                 </button>
@@ -329,11 +323,10 @@ export function InterviewQuestionView({
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
                 placeholder="Bạn có thể gõ giải thích hoặc bấm '🎙️ Nói Trực Tiếp' để micro tự ghi âm..."
-                className={`w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-4 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 disabled:opacity-50 transition-colors ${
-                  isListening
+                className={`w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-4 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 disabled:opacity-50 transition-colors ${isListening
                     ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500 bg-rose-500/5'
                     : 'border-slate-200 dark:border-slate-800 focus:border-purple-500 focus:ring-purple-500'
-                }`}
+                  }`}
               />
               {isListening && (
                 <div className="absolute bottom-3 right-3 flex items-center gap-2 bg-rose-950/80 border border-rose-500/40 text-rose-300 text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse">
@@ -383,7 +376,7 @@ export function InterviewQuestionView({
             ) : (
               <>
                 <span>✨ Gửi Đáp Án & Nhận Feedback AI Tech Lead</span>
-                <span>&rarr;</span>
+                <span></span>
               </>
             )}
           </button>
@@ -527,7 +520,7 @@ export function InterviewQuestionView({
               className="w-full py-3.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-lg shadow-emerald-600/20 transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <span>{evaluationResult.isComplete ? 'Hoàn Thành Phỏng Vấn & Xem Tổng Kết' : 'Chuyển Sang Câu Hỏi Tiếp Theo'}</span>
-              <span>&rarr;</span>
+              <span></span>
             </button>
           </div>
         </div>

@@ -48,11 +48,10 @@ export function Pagination({ meta }: PaginationProps) {
               key={p}
               type="button"
               onClick={() => goToPage(p)}
-              className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
-                p === page
+              className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${p === page
                   ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20'
                   : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-              }`}
+                }`}
             >
               {p}
             </button>
@@ -65,7 +64,7 @@ export function Pagination({ meta }: PaginationProps) {
           onClick={() => goToPage(page + 1)}
           className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
         >
-          Next &rarr;
+          Next
         </button>
       </div>
     </div>
