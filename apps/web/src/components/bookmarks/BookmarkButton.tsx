@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { AuthModal } from '@/components/auth/AuthModal';
@@ -9,17 +9,25 @@ interface BookmarkButtonProps {
   questionId: string;
   initialIsBookmarked?: boolean;
   size?: 'sm' | 'md';
+  onRemoveBookmark?: (questionId: string) => void;
+  onToggleBookmark?: (isBookmarked: boolean, questionId: string) => void;
 }
 
 export function BookmarkButton({
   questionId,
   initialIsBookmarked = false,
   size = 'md',
+  onRemoveBookmark,
+  onToggleBookmark,
 }: BookmarkButtonProps) {
   const { isAuthenticated } = useAuth();
   const [isBookmarked, setIsBookmarked] = useState(initialIsBookmarked);
   const [loading, setLoading] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    setIsBookmarked(initialIsBookmarked);
+  }, [initialIsBookmarked]);
 
   const handleToggleBookmark = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,19 +40,21 @@ export function BookmarkButton({
 
     if (loading) return;
 
-    // Optimistic UI Update
     const previousState = isBookmarked;
-    setIsBookmarked(!previousState);
+    const newState = !previousState;
+    setIsBookmarked(newState);
     setLoading(true);
 
     try {
       if (previousState) {
         await api.unbookmarkQuestion(questionId);
+        onRemoveBookmark?.(questionId);
+        onToggleBookmark?.(false, questionId);
       } else {
         await api.bookmarkQuestion(questionId);
+        onToggleBookmark?.(true, questionId);
       }
     } catch (err: any) {
-      // Revert optimistic state safely on error
       setIsBookmarked(previousState);
     } finally {
       setLoading(false);
@@ -59,11 +69,12 @@ export function BookmarkButton({
       <button
         type="button"
         onClick={handleToggleBookmark}
-        title={isBookmarked ? 'Remove Bookmark' : 'Bookmark Question'}
-        className={`${buttonPadding} rounded-lg transition-all ${
+        disabled={loading}
+        title={isBookmarked ? 'Bỏ lưu câu hỏi này' : 'Lưu câu hỏi này'}
+        className={`${buttonPadding} rounded-lg transition-all cursor-pointer ${
           isBookmarked
             ? 'text-amber-400 bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30'
-            : 'text-slate-400 hover:text-slate-200 bg-slate-900/80 hover:bg-slate-800 border border-slate-800'
+            : 'text-slate-400 hover:text-slate-200 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
         }`}
       >
         <svg
@@ -90,3 +101,4 @@ export function BookmarkButton({
     </>
   );
 }
+

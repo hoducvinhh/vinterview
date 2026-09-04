@@ -18,6 +18,8 @@ interface QuestionCardProps {
   technology: string;
   contentSnippet: string;
   userProgressStatus?: ProgressStatus;
+  isBookmarked?: boolean;
+  onRemoveBookmark?: (id: string) => void;
 }
 
 export function QuestionCard({
@@ -29,6 +31,8 @@ export function QuestionCard({
   technology,
   contentSnippet,
   userProgressStatus = 'NOT_STARTED',
+  isBookmarked = false,
+  onRemoveBookmark,
 }: QuestionCardProps) {
   const { isAuthenticated } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -61,9 +65,15 @@ export function QuestionCard({
 
             <div className="flex items-center gap-2">
               <ProgressSelect questionId={id} initialStatus={userProgressStatus} />
-              <BookmarkButton questionId={id} size="sm" />
+              <BookmarkButton
+                questionId={id}
+                initialIsBookmarked={isBookmarked}
+                onRemoveBookmark={onRemoveBookmark}
+                size="sm"
+              />
             </div>
           </div>
+
 
           {/* Question Title Link */}
           <Link

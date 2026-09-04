@@ -71,19 +71,25 @@ export default function BookmarksPage() {
     );
   }
 
+  const handleRemoveBookmark = (id: string) => {
+    setBookmarks((prev) => prev.filter((item) => item.id !== id));
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Header */}
-      <div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-xs font-semibold uppercase tracking-wider mb-3">
-          🔖 Bộ Sưu Tập Cá Nhân
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-semibold uppercase tracking-wider mb-2">
+            🔖 Bộ Sưu Tập Cá Nhân ({bookmarks.length})
+          </div>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
+            Câu Hỏi Đã Lưu
+          </h1>
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+            Danh sách các câu hỏi phỏng vấn bạn đã đánh dấu bookmark. Nhấp vào biểu tượng Bookmark màu vàng để bỏ lưu bất kỳ lúc nào.
+          </p>
         </div>
-        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2">
-          Câu Hỏi Đã Lưu
-        </h1>
-        <p className="text-xs text-slate-600 dark:text-slate-400">
-          Danh sách các câu hỏi phỏng vấn bạn đã đánh dấu bookmark.
-        </p>
       </div>
 
       {error && (
@@ -105,10 +111,13 @@ export default function BookmarksPage() {
               category={q.category.name}
               technology={q.technology.name}
               contentSnippet={q.content}
+              isBookmarked={true}
+              onRemoveBookmark={handleRemoveBookmark}
             />
           ))}
         </div>
       ) : (
+
         <div className="text-center py-16 bg-white dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800 p-8 space-y-4">
           <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-400 flex items-center justify-center mx-auto">
             🔖
