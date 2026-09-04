@@ -472,6 +472,649 @@ docker run -d --name api-service --network vinterview-net api-image`,
       explanation: `Sử dụng mạng Bridge do người dùng tự định nghĩa sẽ cho phép các container tự động phân giải tên miền DNS theo tên container (ví dụ: \`api-service\` tự trỏ đúng IP mà không cần hardcode).`,
     },
   },
+
+  // --- SYSTEM DESIGN & MICROSERVICES ---
+  {
+    title: 'Thuật toán Rate Limiting trong System Design: Phân biệt Token Bucket, Leaky Bucket và Sliding Window Log?',
+    slug: 'system-design-rate-limiting-algorithms-token-leaky-bucket',
+    difficulty: Difficulty.HARD,
+    categorySlug: 'software-architecture-system-design',
+    techSlug: 'rest-api',
+    content: `Trình bày nguyên lý hoạt động của các thuật toán Rate Limiting phổ biến: Token Bucket, Leaky Bucket, Fixed Window Counter và Sliding Window Log. Chọn giải pháp tối ưu cho hệ thống API Gateway xử lý traffic đột biến (traffic bursts).`,
+    answer: {
+      content: `Rate Limiting bảo vệ API khỏi các cuộc tấn công DoS/DDoS và hiện tượng quá tải.
+- **Token Bucket**: Cung cấp số lượng token cố định vào bucket theo chu kỳ. Khi request đến, hệ thống rút 1 token. Nếu hết token, request bị từ chối (429 Too Many Requests). Cho phép xử lý linh hoạt các đợt traffic burst đột biến.
+- **Leaky Bucket**: Request vào được xếp vào hàng đợi (queue) FIFO và xử lý với tốc độ cố định ra ngoài (constant rate). Loại bỏ hoàn toàn traffic burst, giúp output luôn ổn định.
+- **Sliding Window Log**: Lưu timestamp của mỗi request vào Redis Sorted Set và đếm số request trong khoảng thời gian cửa sổ trượt (sliding window). Độ chính xác tuyệt đối nhưng tốn bộ nhớ lưu trữ.`,
+      codeSnippet: `// Ví dụ triển khai Token Bucket cơ bản bằng Redis Lua Script
+local key = KEYS[1]
+local limit = tonumber(ARGV[1])
+local current = tonumber(redis.call('get', key) or "0")
+
+if current + 1 > limit then
+    return 0 -- Rate limit exceeded
+else
+    redis.call("INCRBY", key, 1)
+    redis.call("EXPIRE", key, 60)
+    return 1 -- Allowed
+end`,
+      explanation: `Hầu hết các hệ thống API Gateway hiện đại (như Nginx, Kong, Amazon API Gateway) sử dụng thuật toán Token Bucket hoặc Leaky Bucket kết hợp với Redis cluster để đảm bảo độ trễ thấp và khả năng mở rộng ngang (horizontal scaling).`,
+    },
+  },
+  {
+    title: 'So sánh các cơ chế giao tiếp giữa các Microservices: REST API vs gRPC vs Message Broker (Kafka/RabbitMQ)?',
+    slug: 'microservices-communication-rest-grpc-kafka-rabbitmq',
+    difficulty: Difficulty.HARD,
+    categorySlug: 'software-architecture-system-design',
+    techSlug: 'grpc',
+    content: `Phân tích hai mô hình giao tiếp Synchronous (REST/gRPC) và Asynchronous (Message Broker). Khi nào nên dùng gRPC thay cho REST API và khi nào dùng Event-Driven với Kafka/RabbitMQ?`,
+    answer: {
+      content: `Trong kiến trúc Microservices:
+- **REST API (HTTP/1.1 + JSON)**: Phù hợp cho giao tiếp bên ngoài (External Client-to-Backend), đơn giản, chuẩn hóa cao nhưng payload JSON nặng và có latency cao hơn.
+- **gRPC (HTTP/2 + Protocol Buffers)**: Phù hợp cho giao tiếp nội bộ (Internal Service-to-Service). Nhờ định dạng Protocol Buffers binary cực nhẹ và tính năng Streaming của HTTP/2, gRPC nhanh gấp 5-10 lần so với REST.
+- **Message Broker (Event-Driven)**: Sử dụng Kafka hoặc RabbitMQ cho giao tiếp bất đồng bộ, giúp decouples các service. Service gửi Event và tiếp tục công việc mà không cần chờ kết quả (Non-blocking).`,
+      codeSnippet: `// Định nghĩa gRPC Service bằng Protocol Buffers (.proto)
+syntax = "proto3";
+
+package payment;
+
+service PaymentService {
+  rpc ProcessPayment (PaymentRequest) returns (PaymentResponse);
+}
+
+message PaymentRequest {
+  string order_id = 1;
+  double amount = 2;
+}
+
+message PaymentResponse {
+  string status = 1;
+  string transaction_id = 2;
+}`,
+      explanation: `Nguyên tắc thiết kế hệ thống Microservices hiện đại: Sử dụng REST API cho Public API, gRPC cho Synchronous Internal Calls (yêu cầu độ trễ cực thấp), và Kafka/RabbitMQ cho Asynchronous Event-Driven Workflows (xử lý đơn hàng, gửi mail, thanh toán).`,
+    },
+  },
+  {
+    title: 'Các chiến lược Caching phổ biến (Cache-Aside, Write-Through, Write-Back) và cách giải quyết bài toán Cache Stampede?',
+    slug: 'caching-strategies-cache-aside-write-through-cache-stampede',
+    difficulty: Difficulty.HARD,
+    categorySlug: 'software-architecture-system-design',
+    techSlug: 'redis',
+    content: `So sánh 3 chiến lược caching: Cache-Aside, Write-Through và Write-Back. Hiện tượng Cache Stampede (Thundering Herd) là gì và làm sao để khắc phục?`,
+    answer: {
+      content: `Chiến lược Caching:
+- **Cache-Aside (Lazy Loading)**: Ứng dụng kiểm tra Cache trước. Nếu Hit -> trả về dữ liệu. Nếu Miss -> truy vấn CSDL, ghi vào Cache rồi trả về. Phổ biến nhất.
+- **Write-Through**: Khi cập nhật dữ liệu, ứng dụng ghi đồng thời vào Cache và CSDL. Đảm bảo tính nhất quán dữ liệu nhưng latency ghi cao hơn.
+- **Write-Back (Write-Behind)**: Ghi vào Cache ngay lập tức và đưa dữ liệu vào hàng đợi để ghi xuống CSDL sau. Tốc độ ghi cực nhanh nhưng có rủi ro mất dữ liệu nếu Cache sập.
+
+**Cache Stampede**: Xảy ra khi một cache key có lượt truy cập cao bị hết hạn (expired), hàng ngàn request đồng thời đổ dồn xuống CSDL gây sập database.`,
+      codeSnippet: `// Khắc phục Cache Stampede bằng Mutex Lock (Singleflight / Distributed Lock)
+async function getOrSetCache(key, fetchDbFn) {
+  let data = await redis.get(key);
+  if (!data) {
+    const lockAcquired = await redis.set(\`lock:\${key}\`, '1', 'NX', 'EX', 10);
+    if (lockAcquired) {
+      data = await fetchDbFn();
+      await redis.set(key, JSON.stringify(data), 'EX', 3600);
+      await redis.del(\`lock:\${key}\`);
+    } else {
+      // Chờ 50ms và thử lấy lại từ cache
+      await new Promise(r => setTimeout(r, 50));
+      return getOrSetCache(key, fetchDbFn);
+    }
+  }
+  return typeof data === 'string' ? JSON.parse(data) : data;
+}`,
+      explanation: `Để ngăn chặn Cache Stampede, ta có thể dùng Distributed Locking (Redis Lock), áp dụng Probabilistic Early Expiration (XFetch algorithm) hoặc chạy Cron Job chủ động warm-up cache trước khi key hết hạn.`,
+    },
+  },
+  {
+    title: 'API Gateway khác gì so với Reverse Proxy (Nginx, HAProxy) trong kiến trúc Microservices?',
+    slug: 'api-gateway-vs-reverse-proxy-nginx-microservices',
+    difficulty: Difficulty.MEDIUM,
+    categorySlug: 'software-architecture-system-design',
+    techSlug: 'rest-api',
+    content: `Phân biệt vai trò của Reverse Proxy (như Nginx, HAProxy) và API Gateway (như Kong, AWS API Gateway, NestJS Gateway). Khi nào nên kết hợp cả hai?`,
+    answer: {
+      content: `Reverse Proxy chủ yếu hoạt động ở Layer 4 (Transport) và Layer 7 (Application) để định tuyến Network Traffic, Load Balancing, SSL Termination và Static Content Caching với hiệu năng cực cao bằng C/C++.
+
+API Gateway nằm trên tầm của Reverse Proxy, đảm nhận thêm các nghiệp vụ Application Layer chuyên sâu cho Microservices như:
+- Authentication & Authorization (Validate JWT, OAuth2).
+- Dynamic Rate Limiting & Quota Management.
+- Request/Response Transformation (Payload Aggregation).
+- Service Discovery Integration (Eureka, Consul).
+- Centralized Logging & Metrics (Prometheus/Grafana).`,
+      codeSnippet: `// Nginx làm Reverse Proxy & Load Balancer
+upstream backend_cluster {
+    least_conn;
+    server api-node-1.internal:4000;
+    server api-node-2.internal:4000;
+}
+
+server {
+    listen 80;
+    server_name api.vinterview.vn;
+
+    location / {
+        proxy_pass http://backend_cluster;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}`,
+      explanation: `Trong kiến trúc thực tế lớn, Nginx thường đóng vai trò là Edge Reverse Proxy tiếp nhận traffic đầu vào từ Internet (giao tiếp SSL), sau đó forward sang API Gateway để xử lý logic định danh, phân quyền và routing đến các Microservices phía sau.`,
+    },
+  },
+
+  // --- BACKEND DEVELOPMENT ---
+  {
+    title: 'Goroutines và Channels trong Golang hoạt động như thế nào và khác biệt gì so với OS Threads?',
+    slug: 'golang-goroutines-channels-concurrency-vs-os-threads',
+    difficulty: Difficulty.HARD,
+    categorySlug: 'backend-development',
+    techSlug: 'golang',
+    content: `Giải thích mô hình Concurrency M:N Scheduler trong Go. Phân biệt Goroutine với OS Thread về kích thước bộ nhớ (stack size), chi phí context switch và giao tiếp bằng Channels.`,
+    answer: {
+      content: `Golang sử dụng mô hình lập trình đồng thời (Concurrency) dựa trên CSP (Communicating Sequential Processes):
+- **Goroutine**: Là luồng ảo (lightweight thread) được quản lý bởi Go Runtime Scheduler. Một Goroutine khởi tạo chỉ tốn khoảng 2KB stack (có thể tự động co giãn), trong khi OS Thread tốn tới 1MB-2MB.
+- **M:N Scheduler**: M Goroutines được map vào N OS Threads thông qua mô hình GMP (Goroutine - Machine - Processor). Context switch giữa các Goroutines xảy ra ở User Space nên cực kỳ nhanh.
+- **Channels**: Cho phép truyền dữ liệu an toàn giữa các Goroutines mà không cần dùng Mutex Lock ("Don't communicate by sharing memory; share memory by communicating").`,
+      codeSnippet: `package main
+import ("fmt"; "time")
+
+func worker(id int, jobs <-chan int, results chan<- int) {
+    for j := range jobs {
+        results <- j * 2
+    }
+}
+
+func main() {
+    jobs := make(chan int, 100)
+    results := make(chan int, 100)
+
+    for w := 1; w <= 3; w++ {
+        go worker(w, jobs, results) // Khởi tạo 3 Goroutines
+    }
+
+    for j := 1; j <= 5; j++ { jobs <- j }
+    close(jobs)
+
+    for a := 1; a <= 5; a++ {
+        fmt.Println(<-results)
+    }
+}`,
+      explanation: `Nhờ chi phí bộ nhớ cực thấp và bộ điều phối GMP Scheduler thông minh, một ứng dụng Go có thể chạy đồng thời hàng trăm nghìn Goroutines trên một cỗ máy bình thường mà không gây cạn kiệt tài nguyên hệ thống.`,
+    },
+  },
+  {
+    title: 'Mô hình bộ nhớ JVM (Heap, Stack, Metaspace) và cơ chế Garbage Collection trong Java hoạt động như thế nào?',
+    slug: 'java-jvm-memory-model-heap-stack-garbage-collection',
+    difficulty: Difficulty.HARD,
+    categorySlug: 'backend-development',
+    techSlug: 'java',
+    content: `Phân tích cấu trúc bộ nhớ JVM (Java Virtual Machine): Heap Space, Thread Stack, Metaspace. Nguyên lý thu gom rác (Garbage Collection) với các thuật toán Mark-and-Sweep, Young Generation (Eden, Survivor) và Tenured Generation?`,
+    answer: {
+      content: `Bộ nhớ JVM được chia làm 3 vùng chính:
+- **Thread Stack**: Lưu trữ các biến cục bộ (primitives) và reference đến objects. Mỗi luồng có một Stack riêng biệt.
+- **Heap Space**: Nơi chứa toàn bộ Object instances và Array. Được chia thành Young Generation (Eden Space, S0, S1) và Old/Tenured Generation.
+- **Metaspace**: Chứa thông tin Metadata của Class, phương thức và hằng số (thay thế PermGen từ Java 8).
+
+**Garbage Collection (GC)**:
+1. **Minor GC**: Thu gom các Object ngắn hạn ở Eden Space. Object sống sót qua nhiều lần Minor GC sẽ được di chuyển lên Old Generation.
+2. **Major/Full GC**: Thu gom trên toàn bộ Old Generation (gây ra hiện tượng Stop-The-World ngắn). Các bộ GC hiện đại như G1GC, ZGC giảm thiểu tối đa thời gian tạm dừng ứng dụng.`,
+      codeSnippet: `public class MemoryDemo {
+    // Stored in Heap
+    private String name = "Vinterview";
+
+    public void processData() {
+        // 'localVal' stored in Thread Stack
+        int localVal = 100;
+        
+        // Object created in Heap, reference stored in Stack
+        User user = new User("Admin");
+    }
+}`,
+      explanation: `Hiểu rõ JVM Memory Model giúp lập trình viên Java tối ưu tham số JVM (-Xms, -Xmx), chọn bộ GC phù hợp (G1GC hoặc ZGC) và tránh các lỗi kinh điển như java.lang.OutOfMemoryError: Java heap space.`,
+    },
+  },
+  {
+    title: 'Global Interpreter Lock (GIL) trong Python là gì và nó ảnh hưởng thế nào đến ứng dụng đa luồng (Multi-threading)?',
+    slug: 'python-global-interpreter-lock-gil-multithreading',
+    difficulty: Difficulty.MEDIUM,
+    categorySlug: 'backend-development',
+    techSlug: 'python',
+    content: `Giải thích lý do CPython cần Global Interpreter Lock (GIL). Phân biệt sự khác nhau giữa Multi-threading và Multi-processing khi thực thi tác vụ CPU-bound so với I/O-bound trong Python.`,
+    answer: {
+      content: `Global Interpreter Lock (GIL) là cơ chế Mutex trong CPython ngăn nhiều luồng (threads) cùng thực thi mã bytecode Python tại một thời điểm trên đa nhân CPU.
+
+- **CPU-Bound Tasks** (tính toán toán học, xử lý ảnh, AI): Multi-threading trong Python không làm tăng tốc độ thực thi do GIL khóa execution. Giải pháp là dùng module multiprocessing (mỗi process có GIL riêng) hoặc viết bằng C-extension.
+- **I/O-Bound Tasks** (đọc ghi file, gọi API, database query): Multi-threading hoặc Asyncio (async/await) rất hiệu quả vì GIL được giải phóng khi luồng đang chờ kết quả I/O.`,
+      codeSnippet: `import asyncio
+import aiohttp
+
+# Tối ưu I/O Bound bằng Asyncio (Non-blocking)
+async def fetch_url(session, url):
+    async with session.get(url) as response:
+        return await response.text()
+
+async def main():
+    async with aiohttp.ClientSession() as session:
+        html = await fetch_url(session, 'https://api.vinterview.vn')
+        print(len(html))
+
+asyncio.run(main())`,
+      explanation: `Từ Python 3.12+, cộng đồng Python đang từng bước hỗ trợ thử nghiệm mã nguồn "Free-threaded CPython" (PEP 703) để cho phép gỡ bỏ hoàn toàn GIL trong tương lai.`,
+    },
+  },
+  {
+    title: 'Phân biệt thứ tự thực thi và vai trò của Middleware, Guards, Interceptors và Pipes trong NestJS?',
+    slug: 'nestjs-middleware-guards-interceptors-pipes-execution-order',
+    difficulty: Difficulty.MEDIUM,
+    categorySlug: 'backend-development',
+    techSlug: 'nestjs',
+    content: `Mô tả chính xác Request Lifecycle trong NestJS framework. Khi một HTTP Request gửi đến, nó đi qua Middleware, Guard, Interceptor, Pipe, Controller và Exception Filter theo thứ tự nào?`,
+    answer: {
+      content: `Vòng đời của một HTTP Request trong NestJS tuân theo thứ tự nghiêm ngặt:
+1. **Incoming Request**
+2. **Middleware**: Xử lý thô request (CORS, Request Logging, Body Parser). Tuân theo chuẩn Express Middleware.
+3. **Guards**: Kiểm tra Authentication & Authorization (JWT, Role check). Trả về true hoặc false (bắn lỗi 403 Forbidden).
+4. **Interceptors (Pre-controller)**: Can thiệp vào luồng xử lý trước khi vào Controller (Bind extra data, caching).
+5. **Pipes**: Validate và Transform dữ liệu đầu vào (body, query, param) theo DTO (dùng class-validator).
+6. **Controller Handler**: Thự thi logic nghiệp vụ và trả về response.
+7. **Interceptors (Post-controller)**: Biến đổi dữ liệu response đầu ra (ví dụ: Format JSON standard response).
+8. **Exception Filters**: Bắt và format các ngoại lệ/lỗi bắn ra trong quá trình xử lý.`,
+      codeSnippet: `@Controller('users')
+@UseGuards(JwtAuthGuard) // 2. Guard
+@UseInterceptors(TransformInterceptor) // 3. Interceptor
+export class UsersController {
+  @Post()
+  create(@Body(new ValidationPipe()) createUserDto: CreateUserDto) { // 4. Pipe
+    return this.usersService.create(createUserDto); // 5. Controller Handler
+  }
+}`,
+      explanation: `Phân chia trách nhiệm rõ ràng giúp ứng dụng NestJS cực kỳ dễ bảo trì và mở rộng: Guard chịu trách nhiệm định danh, Pipe chịu trách nhiệm validate dữ liệu, Interceptor chịu trách nhiệm format response và log performance.`,
+    },
+  },
+  {
+    title: 'Cách tận dụng tối đa CPU Multi-core trong Node.js bằng Cluster Module và Process Manager (PM2)?',
+    slug: 'nodejs-cluster-module-pm2-multi-core-cpu',
+    difficulty: Difficulty.MEDIUM,
+    categorySlug: 'backend-development',
+    techSlug: 'nodejs',
+    content: `Node.js là Single-threaded theo mặc định. Làm thế nào để mở rộng ứng dụng Node.js tận dụng tất cả các nhân CPU trên máy chủ vật lý mà không cần thay đổi kiến trúc?`,
+    answer: {
+      content: `Node.js chạy trên một Event Loop đơn luồng. Để tận dụng các nhân CPU khác:
+- **Node.js Cluster Module**: Cho phép tạo ra một Master process fork nhiều Worker processes chia sẻ chung một cổng mạng (Port). Master process lắng nghe kết nối và phân phối request đến các Worker theo thuật toán Round-Robin.
+- **PM2 Cluster Mode**: PM2 là công cụ quản lý process phổ biến nhất cho Node.js sản xuất. Nó tự động quản lý Cluster Mode, tự khôi phục worker bị sập (Zero-downtime reload) và theo dõi tài nguyên bộ nhớ CPU.`,
+      codeSnippet: `// Khai báo file ecosystem.config.js cho PM2
+module.exports = {
+  apps: [{
+    name: 'web-interview-api',
+    script: './dist/main.js',
+    instances: 'max', // Tự động mở worker bằng số lượng nhân CPU
+    exec_mode: 'cluster',
+    autorestart: true,
+    max_memory_restart: '1G',
+    env: {
+      NODE_ENV: 'production'
+    }
+  }]
+};`,
+      explanation: `Việc chạy PM2 Cluster Mode giúp ứng dụng tăng khả năng chịu tải gấp 4-8 lần trên server đa nhân mà không cần dùng đến các giải pháp phức tạp như Kubernetes.`,
+    },
+  },
+
+  // --- FRONTEND & WEB ARCHITECTURE ---
+  {
+    title: 'React Fiber Architecture là gì và cơ chế Concurrent Rendering trong React 18 giải quyết bài toán UI blocking như thế nào?',
+    slug: 'react-fiber-architecture-concurrent-rendering-react-18',
+    difficulty: Difficulty.HARD,
+    categorySlug: 'frontend-development',
+    techSlug: 'react',
+    content: `So sánh thuật toán Reconciler cũ (Stack Reconciler) và React Fiber. Các API như useTransition, useDeferredValue giúp tối ưu hóa trải nghiệm người dùng như thế nào khi render danh sách lớn?`,
+    answer: {
+      content: `**React Fiber** là kiến trúc Reconciler mới được viết lại của React. Ở bản cũ (Stack Reconciler), công việc reconciliation diễn ra đồng bộ và không thể bị ngắt (recursive), gây khựng UI (jank) khi render cây component lớn.
+
+Fiber chia công việc render thành các đơn vị nhỏ (Fiber units of work) có thể tạm dừng, ưu tiên hoặc hủy bỏ (Interruptible Rendering).
+
+**Concurrent Rendering trong React 18**:
+- Cho phép React chuẩn bị nhiều phiên bản UI đồng thời ở background mà không làm đóng băng UI thread.
+- **useTransition**: Đánh dấu cập nhật state nào có độ ưu tiên thấp (Non-urgent update), giữ cho input/typing mượt mà.
+- **useDeferredValue**: Trì hoãn việc render lại một giá trị biến đổi cho tới khi luồng chính rảnh rỗi.`,
+      codeSnippet: `import { useState, useTransition } from 'react';
+
+function SearchPage() {
+  const [isPending, startTransition] = useTransition();
+  const [query, setQuery] = useState('');
+  const [list, setList] = useState([]);
+
+  const handleChange = (e) => {
+    setQuery(e.target.value); // Urgent Update (Gõ chữ ngay lập tức)
+    startTransition(() => {
+      setList(filterHugeList(e.target.value)); // Non-urgent Update (Lọc danh sách 10.000 phần tử)
+    });
+  };
+
+  return (
+    <div>
+      <input value={query} onChange={handleChange} />
+      {isPending && <p>Đang tải danh sách...</p>}
+      <List items={list} />
+    </div>
+  );
+}`,
+      explanation: `React Fiber và Concurrent Mode chuyển đổi trải nghiệm UI từ tĩnh/khựng sang phản hồi tức thì bằng cách phân cấp độ ưu tiên cho từng sự kiện tương tác của người dùng.`,
+    },
+  },
+  {
+    title: 'React Server Components (RSC) trong Next.js App Router hoạt động thế nào và khác gì so với SSR truyền thống?',
+    slug: 'nextjs-react-server-components-rsc-vs-ssr',
+    difficulty: Difficulty.HARD,
+    categorySlug: 'frontend-development',
+    techSlug: 'nextjs',
+    content: `Phân tích sự khác biệt bản chất giữa React Server Components (RSC) và Server-Side Rendering (SSR). Tại sao RSC lại giúp giảm Bundle Size phía client về 0 KB cho các server-only dependencies?`,
+    answer: {
+      content: `Phân biệt RSC và SSR:
+- **SSR (Server-Side Rendering)**: Render HTML ban đầu trên Server, sau đó gửi toàn bộ JavaScript bundle xuống Client để thực hiện quá trình Hydration. Mọi thư viện sử dụng trong component vẫn được gửi xuống browser.
+- **RSC (React Server Components)**: Chạy 100% trên Server và KHÔNG BAO GIỜ gửi mã JavaScript của Server Component xuống Client. Kết quả trả về là một định dạng JSON dạng Virtual DOM Tree (RSC Stream Payload).
+
+**Ưu điểm của RSC**:
+- **0 KB Client Bundle Size**: Các thư viện nặng (như marked, moment, prisma) nằm hoàn toàn ở Server.
+- Truy cập trực tiếp CSDL và file system từ Component mà không cần tạo REST API endpoint.
+- Tự động giữ nguyên trạng thái Client Component khi Server Component re-fetch dữ liệu.`,
+      codeSnippet: `// app/dashboard/page.tsx (React Server Component mặc định)
+import { prisma } from '@/lib/prisma';
+
+export default async function DashboardPage() {
+  // Direct DB Query - Không cần useEffect hay API Route
+  const users = await prisma.user.findMany();
+
+  return (
+    <div>
+      <h1>Danh sách Người dùng ({users.length})</h1>
+      {/* Client Component tương tác */}
+      <UserTable users={users} />
+    </div>
+  );
+}`,
+      explanation: `Kiến trúc lai (Hybrid Architecture) của Next.js App Router kết hợp sức mạnh của Server Components (cho Data Fetching & Security) và Client Components ('use client' cho State & Event Listeners).`,
+    },
+  },
+  {
+    title: 'Core Web Vitals (LCP, INP, CLS) là gì và làm thế nào để tối ưu hóa hiệu năng render trang web?',
+    slug: 'core-web-vitals-optimization-lcp-inp-cls',
+    difficulty: Difficulty.MEDIUM,
+    categorySlug: 'web-architecture-performance',
+    techSlug: 'javascript',
+    content: `Định nghĩa 3 chỉ số Core Web Vitals của Google: LCP (Largest Contentful Paint), INP (Interaction to Next Paint) và CLS (Cumulative Layout Shift). Trình bày phương pháp kỹ thuật để cải thiện từng chỉ số.`,
+    answer: {
+      content: `Core Web Vitals ảnh hưởng trực tiếp đến thứ hạng SEO và UX ứng dụng web:
+1. **LCP (Largest Contentful Paint)**: Đo thời gian hiển thị phần tử nội dung lớn nhất (ảnh hero, banner, đoạn văn chính). Mục tiêu < 2.5s.
+   - *Tối ưu*: Sử dụng CDN, nén ảnh định dạng WebP/AVIF, preload critical assets, dùng Server-Side Rendering (SSR).
+2. **INP (Interaction to Next Paint)**: Thay thế FID từ 2024, đo độ trễ phản hồi UI khi người dùng nhấp/gõ phím. Mục tiêu < 200ms.
+   - *Tối ưu*: Tách các Long Tasks (> 50ms) bằng requestIdleCallback hoặc setTimeout, dùng React useTransition.
+3. **CLS (Cumulative Layout Shift)**: Đo độ dịch chuyển bố cục bất ngờ của trang web. Mục tiêu < 0.1.
+   - *Tối ưu*: Luôn quy định kích thước width/height cho <img> và <iframe>, réserve không gian cho quảng cáo/font chữ bằng CSS font-display: swap.`,
+      codeSnippet: `<!-- Preload Hero Image để tối ưu LCP -->
+<link rel="preload" as="image" href="/hero-banner.webp" type="image/webp">
+
+<!-- Giữ khung layout cố định tránh CLS -->
+<div style="aspect-ratio: 16 / 9; background-color: #f0f0f0;">
+  <img src="/banner.webp" width="1280" height="720" alt="Banner" />
+</div>`,
+      explanation: `Tối ưu hóa Core Web Vitals đòi hỏi kết hợp giữa đo đạc bằng Lighthouse / Chrome DevTools Performance tab và tối ưu hóa tài nguyên từ Server đến Client.`,
+    },
+  },
+
+  // --- DATABASE & STORAGE ---
+  {
+    title: 'Cấu trúc chỉ mục B-Tree Index và Hash Index trong CSDL quan hệ hoạt động như thế nào và khi nào chỉ mục không được sử dụng?',
+    slug: 'database-b-tree-vs-hash-indexing-performance',
+    difficulty: Difficulty.HARD,
+    categorySlug: 'database-storage',
+    techSlug: 'postgresql',
+    content: `Phân tích cấu trúc cây B-Tree Index và Hash Index. Tại sao truy vấn toán tử so sánh khoảng (>, <, BETWEEN, LIKE 'abc%') chỉ dùng được B-Tree? Trường hợp nào Index Scan bị vô hiệu hóa?`,
+    answer: {
+      content: `So sánh Indexing:
+- **B-Tree Index**: Cấu trúc cây tự cân bằng giữ dữ liệu đã được sắp xếp. Hỗ trợ hiệu quả truy vấn so sánh chính xác (=), tìm kiếm khoảng (>, <, BETWEEN) và sắp xếp (ORDER BY). Thời gian tìm kiếm là O(log N).
+- **Hash Index**: Dùng bảng băm. Tìm kiếm so sánh chính xác (=) cực nhanh O(1), nhưng KHÔNG hỗ trợ tìm kiếm khoảng hoặc sắp xếp.
+
+**Các trường hợp Index bị vô hiệu hóa (Sequential Scan / Full Table Scan)**:
+1. Dùng hàm trên cột indexed: WHERE LOWER(email) = 'user@gmail.com'.
+2. Dùng toán tử Wildcard phía trước: WHERE name LIKE '%admin'.
+3. Type Coercion (Ép kiểu ngầm định): Cột kiểu String nhưng truyền vào kiểu Number.
+4. Bảng có quá ít bản ghi (Query Optimizer nhận thấy Full Scan nhanh hơn Index Scan).`,
+      codeSnippet: `-- Sai: Vô hiệu hóa Index trên cột created_at
+SELECT * FROM orders WHERE DATE(created_at) = '2026-09-04';
+
+-- Đúng: Tận dụng B-Tree Index tối đa
+SELECT * FROM orders 
+WHERE created_at >= '2026-09-04 00:00:00' 
+  AND created_at < '2026-09-05 00:00:00';`,
+      explanation: `Hiểu rõ cơ chế Optimizer của SQL giúp lập trình viên viết được các câu lệnh SQL tối ưu và biết cách tạo Functional Index (Index dựa trên hàm) khi cần thiết.`,
+    },
+  },
+  {
+    title: 'SQL Window Functions (ROW_NUMBER, RANK, DENSE_RANK, LEAD, LAG) là gì và cách ứng dụng trong truy vấn dữ liệu phức tạp?',
+    slug: 'sql-window-functions-row-number-rank-lead-lag',
+    difficulty: Difficulty.MEDIUM,
+    categorySlug: 'database-storage',
+    techSlug: 'sql',
+    content: `Phân biệt Window Functions với hàm nhóm GROUP BY. Viết câu lệnh SQL tìm Top 3 nhân viên có lương cao nhất trong từng phòng ban sử dụng DENSE_RANK().`,
+    answer: {
+      content: `Khác với GROUP BY (nén nhiều dòng thành 1 dòng kết quả), **Window Functions** tính toán trên một tập hợp các dòng liên quan (Window frame) mà KHÔNG làm mất đi chi tiết từng dòng dữ liệu ban đầu.
+
+Cú pháp chuẩn sử dụng mệnh đề OVER (PARTITION BY ... ORDER BY ...):
+- **ROW_NUMBER()**: Đánh số thứ tự duy nhất tăng dần (1, 2, 3, 4).
+- **RANK()**: Đánh số thứ tự đồng hạng, có nhảy cách số (1, 2, 2, 4).
+- **DENSE_RANK()**: Đánh số thứ tự đồng hạng, KHÔNG nhảy cách số (1, 2, 2, 3).
+- **LEAD() / LAG()**: Truy cập dữ liệu của dòng phía sau hoặc phía trước dòng hiện tại.`,
+      codeSnippet: `WITH RankedEmployees AS (
+  SELECT 
+    id, name, department_id, salary,
+    DENSE_RANK() OVER (
+      PARTITION BY department_id 
+      ORDER BY salary DESC
+    ) as rank_num
+  FROM employees
+)
+SELECT * FROM RankedEmployees WHERE rank_num <= 3;`,
+      explanation: `Window Functions là công cụ đắc lực trong phân tích dữ liệu (Business Intelligence / Data Engineering) giúp giải quyết các bài toán xếp hạng, tính doanh thu lũy kế và so sánh tăng trưởng theo thời gian.`,
+    },
+  },
+  {
+    title: 'Cơ chế lưu trữ dữ liệu bền vững (Persistence) trong Redis: So sánh RDB Snapshots và Append Only File (AOF)?',
+    slug: 'redis-persistence-rdb-vs-aof-snapshots',
+    difficulty: Difficulty.MEDIUM,
+    categorySlug: 'database-storage',
+    techSlug: 'redis',
+    content: `Redis lưu trữ toàn bộ dữ liệu trên RAM. Làm sao để khôi phục dữ liệu khi server bị khởi động lại? Phân tích ưu nhược điểm của 2 cơ chế RDB (Redis Database) và AOF (Append Only File).`,
+    answer: {
+      content: `Hai cơ chế Persistence trong Redis:
+- **RDB (Snapshotting)**: Chụp lại toàn bộ trạng thái dữ liệu trên RAM thành file nhị phân nén (dạng dump.rdb) theo các khoảng thời gian định trước (vd: 5 phút/lần).
+  - *Ưu điểm*: File gọn nhẹ, khôi phục server cực nhanh.
+  - *Nhược điểm*: Nguy cơ mất dữ liệu trong khoảng thời gian giữa 2 lần snapshot.
+- **AOF (Append Only File)**: Ghi lại mọi lệnh ghi (SET, DEL, INCR) xuống file log theo thời gian thực (hoặc mỗi giây).
+  - *Ưu điểm*: An toàn dữ liệu tối đa (mất tối đa 1 giây dữ liệu).
+  - *Nhược điểm*: File AOF lớn dần theo thời gian (cần cơ chế AOF Rewrite để nén bớt).`,
+      codeSnippet: `# Cấu hình kết hợp RDB & AOF trong redis.conf
+appendonly yes
+appendfsync everysec
+
+# Tự động trigger RDB Snapshot nếu có 10.000 thay đổi trong 60 giây
+save 60 10000`,
+      explanation: `Best practice cho môi trường Production: Kết hợp cả RDB và AOF (Hybrid Persistence) để vừa đảm bảo khả năng khôi phục nhanh vừa an toàn dữ liệu tuyệt đối.`,
+    },
+  },
+
+  // --- DEVOPS & INFRASTRUCTURE ---
+  {
+    title: 'Kiến trúc cơ bản của cụm Kubernetes (Control Plane vs Worker Nodes): Pod, Deployment và Service là gì?',
+    slug: 'kubernetes-architecture-control-plane-worker-nodes-pod-service',
+    difficulty: Difficulty.HARD,
+    categorySlug: 'devops-infrastructure',
+    techSlug: 'docker',
+    content: `Giải thích kiến trúc cụm Kubernetes (K8s): Vai trò của API Server, etcd, Scheduler trong Control Plane và Kubelet trên Worker Node. Phân biệt các khái niệm Pod, ReplicaSet, Deployment và Service (ClusterIP, NodePort, LoadBalancer).`,
+    answer: {
+      content: `Kiến trúc Kubernetes (K8s):
+1. **Control Plane (Master Node)**:
+   - **kube-apiserver**: Đầu mối giao tiếp duy nhất của cụm.
+   - **etcd**: CSDL Key-Value phân tán lưu trữ toàn bộ trạng thái cụm K8s.
+   - **kube-scheduler**: Lựa chọn Worker Node tối ưu để đặt Pod.
+   - **kube-controller-manager**: Đảm bảo trạng thái thực tế của cụm trùng khớp với trạng thái khai báo (Desired State).
+2. **Worker Node**:
+   - **kubelet**: Agent giao tiếp với Control Plane và Docker Engine trên node.
+   - **kube-proxy**: Quản lý quy tắc mạng (iptables) định tuyến traffic.
+
+3. **K8s Objects**:
+   - **Pod**: Đơn vị nhỏ nhất chứa 1 hoặc nhiều Docker containers.
+   - **Deployment**: Quản lý việc cập nhật (Rolling Update), tự động khôi phục Pod bị sập.
+   - **Service**: Tạo điểm truy cập cố định (Static IP/DNS) cho tập hợp các Pods.`,
+      codeSnippet: `# Khai báo Deployment cho Web API
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vinterview-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: vinterview/api:v1.0.0
+        ports:
+        - containerPort: 4000`,
+      explanation: `Kubernetes đã trở thành tiêu chuẩn thực tế (de-facto standard) trong việc điều phối container (container orchestration) cho các hệ thống ứng dụng quy mô lớn.`,
+    },
+  },
+
+  // --- CYBERSECURITY & INFORMATION SECURITY ---
+  {
+    title: 'So sánh Authentication dựa trên Session-Cookie và JWT Token. Làm sao để giải quyết bài toán Token Invalidation / Revocation với JWT?',
+    slug: 'jwt-vs-session-cookie-authentication-token-revocation',
+    difficulty: Difficulty.MEDIUM,
+    categorySlug: 'cybersecurity-information-security',
+    techSlug: 'rest-api',
+    content: `So sánh hai cơ chế xác thực Session-based và Token-based (JWT). Vì sao JWT có tính Stateless nhưng lại khó thu hồi (revoke/logout) trước khi hết hạn? Trình bày 3 giải pháp xử lý.`,
+    answer: {
+      content: `So sánh:
+- **Session-Cookie**: Stateful. Server lưu session dữ liệu trên bộ nhớ/Redis, client giữ Session ID trong Cookie. Dễ thu hồi (chỉ cần xóa session trên server) nhưng khó mở rộng trên cụm server lớn.
+- **JWT (JSON Web Token)**: Stateless. Token chứa thông tin User và được ký điện tử (HMAC/RSA). Server không cần lưu state, tự giải mã và tin tưởng token. Khó thu hồi tức thì trước khi hết hạn (exp).
+
+**Giải pháp thu hồi JWT Token (Token Revocation)**:
+1. **Short-lived Access Token + Long-lived Refresh Token**: Đặt thời hạn Access Token ngắn (5-15 phút). Kiểm tra tính hợp lệ của Refresh Token tại Redis khi cấp mới.
+2. **JWT Blacklist trong Redis**: Khi người dùng Logout, lưu JWT ID (jti) vào Redis với thời hạn TTL đúng bằng thời gian sống còn lại của token.
+3. **Token Versioning / User Password Version**: Thêm cột tokenVersion vào User table. Khi đổi mật khẩu/logout all devices, tăng tokenVersion++.`,
+      codeSnippet: `// Kiểm tra JWT Blacklist tại NestJS JwtAuthGuard
+async canActivate(context: ExecutionContext): Promise<boolean> {
+  const request = context.switchToHttp().getRequest();
+  const token = this.extractTokenFromHeader(request);
+  
+  const isBlacklisted = await this.redis.get(\`blacklist:\${token}\`);
+  if (isBlacklisted) {
+    throw new UnauthorizedException('Token đã bị thu hồi');
+  }
+  
+  return true;
+}`,
+      explanation: `Kết hợp Short-lived Access Token và Redis Blacklist cho Refresh Token là kiến trúc bảo mật tiêu chuẩn được áp dụng rộng rãi trên các ứng dụng ngân hàng và thương mại điện tử.`,
+    },
+  },
+
+  // --- DATA ENGINEERING & BIG DATA ---
+  {
+    title: 'Kiến trúc của Apache Kafka (Producers, Consumers, Topics, Partitions, Consumer Groups) và cơ chế Exactly-Once Processing?',
+    slug: 'apache-kafka-architecture-producers-consumers-partitions',
+    difficulty: Difficulty.HARD,
+    categorySlug: 'data-engineering-big-data',
+    techSlug: 'kafka',
+    content: `Giải thích kiến trúc phân tán của Apache Kafka. Tại sao việc chia Topic thành các Partitions lại giúp Kafka đạt thông lượng (throughput) hàng triệu message mỗi giây?`,
+    answer: {
+      content: `Apache Kafka là nền tảng Distributed Event Streaming hiệu năng cao:
+- **Topic & Partitions**: Mỗi Topic được chia nhỏ thành nhiều **Partitions** nằm rải rác trên các Kafka Brokers. Partition là một file log append-only sắp thứ tự.
+- **Scalability**: Việc phân chia Partitions cho phép ghi và đọc dữ liệu song song (Parallel Processing).
+- **Consumer Groups**: Tập hợp các Consumers chia nhau xử lý message từ các Partitions. Mỗi Partition chỉ được đọc bởi 1 Consumer duy nhất trong cùng 1 Group tại một thời điểm.
+- **Exactly-Once Semantics (EOS)**: Đảm bảo message không bị mất cũng như không bị xử lý lặp lại nhờ kết hợp Producer Idempotence và Transactional Coordinator.`,
+      codeSnippet: `// Ví dụ Node.js Kafka Producer sử dụng kafkajs
+const { Kafka } = require('kafkajs');
+
+const kafka = new Kafka({ clientId: 'vinterview-app', brokers: ['kafka:9092'] });
+const producer = kafka.producer();
+
+async function sendOrderEvent(order) {
+  await producer.connect();
+  await producer.send({
+    topic: 'order-created-topic',
+    messages: [
+      { key: order.userId, value: JSON.stringify(order) } // Key đảm bảo cùng user luôn vào 1 partition
+    ],
+  });
+}`,
+      explanation: `Kafka đóng vai trò là xương sống cho các hệ thống Data Pipeline, Real-time Analytics và Event-Driven Microservices hiện đại.`,
+    },
+  },
+
+  // --- ARTIFICIAL INTELLIGENCE & MACHINE LEARNING ---
+  {
+    title: 'Kiến trúc Retrieval-Augmented Generation (RAG) hoạt động như thế nào để kết hợp LLMs với cơ sở dữ liệu tri thức doanh nghiệp?',
+    slug: 'retrieval-augmented-generation-rag-architecture-llm',
+    difficulty: Difficulty.HARD,
+    categorySlug: 'artificial-intelligence-machine-learning',
+    techSlug: 'python',
+    content: `Phân tích mô hình RAG (Retrieval-Augmented Generation) trong ứng dụng AI. Làm thế nào Vector Database (pgvector, Pinecone, Qdrant) và Embeddings giúp giải quyết bài toán Hallucination của LLMs?`,
+    answer: {
+      content: `RAG (Retrieval-Augmented Generation) là kỹ thuật cung cấp thông tin tri thức bên ngoài vào ngữ cảnh (Context Window) của Large Language Model (LLM) trước khi tạo câu trả lời:
+
+**Các bước trong quy trình RAG**:
+1. **Document Ingestion & Chunking**: Chia nhỏ tài nguyên doanh nghiệp (PDF, Docs) thành các văn bản ngắn.
+2. **Embedding Generation**: Dùng Embedding Model (như OpenAI text-embedding-3-small) biến đổi văn bản thành các Vector nhiều chiều.
+3. **Vector Storage**: Lưu trữ Vector vào CSDL Vector (như PostgreSQL với extension pgvector).
+4. **Retrieval**: Khi user đặt câu hỏi, chuyển câu hỏi thành Vector và tìm kiếm các đoạn văn bản có độ tương đồng Semantic cao nhất (Cosine Similarity / Euclidean Distance).
+5. **Generation**: Đưa thông tin trích xuất vào Prompt gửi cho LLM để tạo câu trả lời chính xác, tránh hiện tượng LLM chém gió (Hallucination).`,
+      codeSnippet: `# Tìm kiếm vector tương đồng bằng pgvector trong PostgreSQL
+SELECT content, 1 - (embedding <=> $1) AS similarity
+FROM document_chunks
+WHERE 1 - (embedding <=> $1) > 0.8
+ORDER BY similarity DESC
+LIMIT 5;`,
+      explanation: `RAG là giải pháp chi phí thấp và hiệu quả cao hơn nhiều so với việc Fine-tuning lại toàn bộ mô hình LLM khi cần cập nhật dữ liệu tri thức mới cho doanh nghiệp.`,
+    },
+  },
+
+  // --- SOFTWARE TESTING & QA ---
+  {
+    title: 'Tháp kiểm thử (Testing Pyramid): Phân biệt Unit Test, Integration Test và End-to-End (E2E) Test trong phát triển phần mềm?',
+    slug: 'testing-pyramid-unit-vs-integration-vs-e2e-testing',
+    difficulty: Difficulty.EASY,
+    categorySlug: 'software-testing-quality-assurance',
+    techSlug: 'typescript',
+    content: `Trình bày mô hình Testing Pyramid. Tại sao nên dành số lượng lớn nhất cho Unit Test và ít nhất cho E2E Test? Cho ví dụ công cụ tương ứng (Jest, Vitest, Playwright, Cypress).`,
+    answer: {
+      content: `Tháp kiểm thử (Testing Pyramid) quy định tỷ lệ phân bổ các loại test:
+1. **Unit Test (Đáy tháp - Chiếm 70%)**: Kiểm thử các hàm, class đơn lẻ trong môi trường cách ly (dùng Mocks/Stubs).
+   - *Đặc điểm*: Tốc độ chạy cực nhanh (vài miligiây), chi phí bảo trì thấp. Công cụ: Jest, Vitest, JUnit.
+2. **Integration Test (Giữa tháp - Chiếm 20%)**: Kiểm thử sự tương tác giữa nhiều module với nhau (vd: NestJS Controller tương tác với PostgreSQL CSDL thực tế).
+   - *Đặc điểm*: Chậm hơn Unit test, đảm bảo các component kết nối đúng đắn.
+3. **End-to-End Test (Đỉnh tháp - Chiếm 10%)**: Kiểm thử toàn bộ luồng trải nghiệm người dùng trên trình duyệt thực tế từ Frontend down xuống Backend CSDL.
+   - *Đặc điểm*: Tốn thời gian chạy nhất, dễ bị lỗi chập chờn (flaky), chi phí viết và bảo trì cao. Công cụ: Playwright, Cypress.`,
+      codeSnippet: `// Ví dụ Unit Test bằng Vitest
+import { describe, it, expect } from 'vitest';
+import { calculateDiscount } from './discount';
+
+describe('calculateDiscount', () => {
+  it('nên giảm 20% cho tài khoản Premium', () => {
+    const result = calculateDiscount(100, true);
+    expect(result).toBe(80);
+  });
+});`,
+      explanation: `Tuân thủ mô hình Testing Pyramid giúp đội ngũ phát triển phát hiện lỗi sớm ngay ở tầng Unit Test, đảm bảo tốc độ phản hồi CI/CD nhanh chóng mà vẫn đạt độ tin cậy cao.`,
+    },
+  },
 ];
 
 export async function seedQuestions(
