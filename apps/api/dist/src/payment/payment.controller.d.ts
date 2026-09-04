@@ -18,28 +18,28 @@ export declare class PaymentController {
     checkOrderStatus(orderCode: number, userId: string): Promise<{
         status: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        description: string;
-        userId: string;
         orderCode: number;
         amount: number;
+        description: string;
         paymentLinkId: string | null;
         checkoutUrl: string | null;
         paidAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }>;
     getUserOrders(userId: string): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        description: string;
-        status: import("@prisma/client").$Enums.OrderStatus;
-        userId: string;
         orderCode: number;
         amount: number;
+        description: string;
+        status: import("@prisma/client").$Enums.OrderStatus;
         paymentLinkId: string | null;
         checkoutUrl: string | null;
         paidAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
     }[]>;
     testActivatePremium(userId: string): Promise<{
         success: boolean;

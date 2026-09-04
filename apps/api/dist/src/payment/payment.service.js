@@ -13,7 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PaymentService = exports.CreateCheckoutDto = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
-const PayOS = require('@payos/node');
+const PayOSModule = require('@payos/node');
+const PayOS = PayOSModule.default || PayOSModule;
 class CreateCheckoutDto {
     planType;
 }

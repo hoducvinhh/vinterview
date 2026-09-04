@@ -1,7 +1,8 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const PayOS = require('@payos/node');
+const PayOSModule = require('@payos/node');
+const PayOS = PayOSModule.default || PayOSModule;
 
 export class CreateCheckoutDto {
   planType?: 'MONTHLY' | 'LIFETIME';
