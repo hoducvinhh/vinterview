@@ -31,11 +31,11 @@ export class AnalyticsController {
   @ApiResponse({ status: HttpStatus.CREATED, description: 'Page view recorded successfully.' })
   trackPageView(@Body() dto: TrackPageViewDto, @Req() req: Request) {
     const rawIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
-    const ip = Array.isArray(rawIp) ? rawIp[0] : rawIp;
+    const ip = Array.isArray(rawIp) ? rawIp[0] : (rawIp ? rawIp.split(',')[0].trim() : undefined);
     const userAgent = req.headers['user-agent'];
-    const userId = (req as any).user?.id;
+    const authHeader = req.headers['authorization'];
 
-    return this.analyticsService.trackPageView(dto, ip, userAgent, userId);
+    return this.analyticsService.trackPageView(dto, ip, userAgent, authHeader);
   }
 
   @Get('stats')
@@ -47,7 +47,21 @@ export class AnalyticsController {
     description: 'Returns total pageviews, unique visitors count, daily breakdown, and top pages.',
   })
   @ApiResponse({ status: HttpStatus.OK, description: 'Analytics statistics retrieved.' })
-  getStats() {
-    return this.analyticsService.getStats();
+  getStats(@Req() req: Request) {
+    const rawIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
+    const ip = Array.isArray(rawIp) ? rawIp[0] : (rawIp ? rawIp.split(',')[0].trim() : undefined);
+    return this.analyticsService.getStats(ip);
+  }
+
+  @Post('reset')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Reset all pageview analytics to zero (Admin Only)',
+  })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Analytics data reset successfully.' })
+  resetStats() {
+    return this.analyticsService.resetStats();
   }
 }

@@ -6,14 +6,18 @@ export declare class AnalyticsController {
     constructor(analyticsService: AnalyticsService);
     trackPageView(dto: TrackPageViewDto, req: Request): Promise<{
         id: string;
-        createdAt: Date;
-        userId: string | null;
         path: string;
         visitorId: string | null;
         ip: string | null;
         userAgent: string | null;
+        userId: string | null;
+        createdAt: Date;
+    } | {
+        success: boolean;
+        tracked: boolean;
+        reason: string;
     }>;
-    getStats(): Promise<{
+    getStats(req: Request): Promise<{
         totalViews: number;
         uniqueVisitors: number;
         viewsToday: number;
@@ -29,5 +33,9 @@ export declare class AnalyticsController {
             views: number;
             visitors: number;
         }[];
+    }>;
+    resetStats(): Promise<{
+        success: boolean;
+        message: string;
     }>;
 }

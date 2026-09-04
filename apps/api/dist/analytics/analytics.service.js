@@ -12,46 +12,136 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AnalyticsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const client_1 = require("@prisma/client");
+const jwt_1 = require("@nestjs/jwt");
 let AnalyticsService = class AnalyticsService {
     prisma;
-    constructor(prisma) {
+    jwtService;
+    adminIps = new Set();
+    constructor(prisma, jwtService) {
         this.prisma = prisma;
+        this.jwtService = jwtService;
     }
-    async trackPageView(dto, ip, userAgent, userId) {
+    recordAdminIp(ip) {
+        if (ip) {
+            const cleanIp = ip.replace(/^::ffff:/, '').trim();
+            this.adminIps.add(cleanIp);
+            this.adminIps.add(ip);
+        }
+    }
+    async trackPageView(dto, ip, userAgent, authHeader) {
+        const cleanIp = ip ? ip.replace(/^::ffff:/, '').trim() : undefined;
+        let userId;
+        let isAdmin = false;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            try {
+                const token = authHeader.split(' ')[1];
+                const decoded = this.jwtService.decode(token);
+                if (decoded) {
+                    userId = decoded.sub;
+                    if (decoded.role === client_1.UserRole.ADMIN) {
+                        isAdmin = true;
+                    }
+                }
+            }
+            catch {
+            }
+        }
+        if (userId && !isAdmin) {
+            const user = await this.prisma.user.findUnique({
+                where: { id: userId },
+                select: { role: true },
+            });
+            if (user && user.role === client_1.UserRole.ADMIN) {
+                isAdmin = true;
+            }
+        }
+        if (isAdmin) {
+            this.recordAdminIp(ip);
+            return { success: true, tracked: false, reason: 'Admin user traffic excluded' };
+        }
+        if ((ip && this.adminIps.has(ip)) || (cleanIp && this.adminIps.has(cleanIp))) {
+            return { success: true, tracked: false, reason: 'Admin IP excluded' };
+        }
+        if (dto.path && dto.path.startsWith('/admin')) {
+            return { success: true, tracked: false, reason: 'Admin route excluded' };
+        }
         return this.prisma.pageView.create({
             data: {
                 path: dto.path,
                 visitorId: dto.visitorId || null,
-                ip: ip || null,
+                ip: cleanIp || ip || null,
                 userAgent: userAgent || null,
                 userId: userId || null,
             },
         });
     }
-    async getStats() {
+    async resetStats() {
+        await this.prisma.pageView.deleteMany({});
+        return { success: true, message: 'Dữ liệu thống kê đã được reset về 0 thành công!' };
+    }
+    async getStats(adminIp) {
+        if (adminIp) {
+            this.recordAdminIp(adminIp);
+        }
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
-        const totalViews = await this.prisma.pageView.count();
+        const adminUsers = await this.prisma.user.findMany({
+            where: { role: client_1.UserRole.ADMIN },
+            select: { id: true },
+        });
+        const adminUserIds = adminUsers.map((u) => u.id);
+        const adminIpsList = Array.from(this.adminIps);
+        const baseWhere = {
+            path: {
+                not: {
+                    startsWith: '/admin',
+                },
+            },
+        };
+        if (adminUserIds.length > 0) {
+            baseWhere.userId = {
+                notIn: adminUserIds,
+            };
+        }
+        if (adminIpsList.length > 0) {
+            baseWhere.ip = {
+                notIn: adminIpsList,
+            };
+        }
+        const totalViews = await this.prisma.pageView.count({
+            where: baseWhere,
+        });
         const uniqueVisitorsResult = await this.prisma.pageView.groupBy({
             by: ['visitorId', 'ip'],
+            where: baseWhere,
         });
         const uniqueVisitors = uniqueVisitorsResult.length;
         const viewsToday = await this.prisma.pageView.count({
-            where: { createdAt: { gte: startOfToday } },
+            where: {
+                ...baseWhere,
+                createdAt: { gte: startOfToday },
+            },
         });
         const uniqueVisitorsTodayResult = await this.prisma.pageView.groupBy({
             by: ['visitorId', 'ip'],
             where: {
+                ...baseWhere,
                 createdAt: { gte: startOfToday },
             },
         });
         const uniqueVisitorsToday = uniqueVisitorsTodayResult.length;
-        const totalUsers = await this.prisma.user.count();
+        const totalUsers = await this.prisma.user.count({
+            where: {
+                role: client_1.UserRole.USER,
+            },
+        });
         const topPagesRaw = await this.prisma.pageView.groupBy({
             by: ['path'],
             _count: {
                 id: true,
             },
+            where: baseWhere,
             orderBy: {
                 _count: {
                     id: 'desc',
@@ -73,6 +163,7 @@ let AnalyticsService = class AnalyticsService {
             dayEnd.setHours(23, 59, 59, 999);
             const viewsCount = await this.prisma.pageView.count({
                 where: {
+                    ...baseWhere,
                     createdAt: {
                         gte: dayStart,
                         lte: dayEnd,
@@ -82,6 +173,7 @@ let AnalyticsService = class AnalyticsService {
             const visitorsGroup = await this.prisma.pageView.groupBy({
                 by: ['visitorId', 'ip'],
                 where: {
+                    ...baseWhere,
                     createdAt: {
                         gte: dayStart,
                         lte: dayEnd,
@@ -109,6 +201,7 @@ let AnalyticsService = class AnalyticsService {
 exports.AnalyticsService = AnalyticsService;
 exports.AnalyticsService = AnalyticsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        jwt_1.JwtService])
 ], AnalyticsService);
 //# sourceMappingURL=analytics.service.js.map

@@ -28,13 +28,18 @@ let AnalyticsController = class AnalyticsController {
     }
     trackPageView(dto, req) {
         const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        const ip = Array.isArray(rawIp) ? rawIp[0] : rawIp;
+        const ip = Array.isArray(rawIp) ? rawIp[0] : (rawIp ? rawIp.split(',')[0].trim() : undefined);
         const userAgent = req.headers['user-agent'];
-        const userId = req.user?.id;
-        return this.analyticsService.trackPageView(dto, ip, userAgent, userId);
+        const authHeader = req.headers['authorization'];
+        return this.analyticsService.trackPageView(dto, ip, userAgent, authHeader);
     }
-    getStats() {
-        return this.analyticsService.getStats();
+    getStats(req) {
+        const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        const ip = Array.isArray(rawIp) ? rawIp[0] : (rawIp ? rawIp.split(',')[0].trim() : undefined);
+        return this.analyticsService.getStats(ip);
+    }
+    resetStats() {
+        return this.analyticsService.resetStats();
     }
 };
 exports.AnalyticsController = AnalyticsController;
@@ -62,10 +67,24 @@ __decorate([
         description: 'Returns total pageviews, unique visitors count, daily breakdown, and top pages.',
     }),
     (0, swagger_1.ApiResponse)({ status: common_1.HttpStatus.OK, description: 'Analytics statistics retrieved.' }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AnalyticsController.prototype, "getStats", null);
+__decorate([
+    (0, common_1.Post)('reset'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.UserRole.ADMIN),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Reset all pageview analytics to zero (Admin Only)',
+    }),
+    (0, swagger_1.ApiResponse)({ status: common_1.HttpStatus.OK, description: 'Analytics data reset successfully.' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
-], AnalyticsController.prototype, "getStats", null);
+], AnalyticsController.prototype, "resetStats", null);
 exports.AnalyticsController = AnalyticsController = __decorate([
     (0, swagger_1.ApiTags)('analytics'),
     (0, common_1.Controller)('analytics'),

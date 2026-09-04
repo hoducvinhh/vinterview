@@ -472,6 +472,11 @@ class ApiClient {
     return this.get<AnalyticsStats>('/analytics/stats');
   }
 
+  async resetAnalyticsStats(): Promise<{ success: boolean; message: string }> {
+    return this.post<{ success: boolean; message: string }>('/analytics/reset');
+  }
+
+
   // Questions
   async getQuestions(params: QueryQuestionsParams = {}): Promise<QuestionsResponse> {
     const query = new URLSearchParams();
