@@ -11,6 +11,8 @@ export interface User {
   email: string;
   name?: string;
   role: 'USER' | 'ADMIN';
+  isPremium?: boolean;
+  premiumExpiresAt?: string;
   avatarUrl?: string;
   headline?: string;
   bio?: string;
@@ -511,17 +513,39 @@ class ApiClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Phân tích CV thất bại với trạng thái ${response.status}`);
+      const err: any = new Error(errorData.message || `Phân tích CV thất bại với trạng thái ${response.status}`);
+      err.isPremiumRequired = errorData.isPremiumRequired || response.status === 403;
+      err.code = errorData.code;
+      throw err;
     }
 
     return response.json();
   }
 
-  async deleteQuestion(id: string): Promise<{ success: boolean; message: string }> {
+  async createCheckout(planType: 'MONTHLY' | 'LIFETIME' = 'LIFETIME'): Promise<{
+    orderCode: number;
+    amount: number;
+    checkoutUrl: string;
+    status: string;
+  }> {
+    return this.post('/payments/create-checkout', { planType });
+  }
 
+  async getPaymentStatus(orderCode: number): Promise<any> {
+    return this.get(`/payments/status/${orderCode}`);
+  }
+
+  async getMyOrders(): Promise<any[]> {
+    return this.get('/payments/my-orders');
+  }
+
+  async testActivatePremium(): Promise<{ success: boolean; message: string }> {
+    return this.post('/payments/test-activate', {});
+  }
+
+  async deleteQuestion(id: string): Promise<{ success: boolean; message: string }> {
     return this.delete<{ success: boolean; message: string }>(`/questions/${id}`);
   }
 }
 
 export const api = new ApiClient(API_BASE_URL);
-

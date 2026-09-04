@@ -14,6 +14,8 @@ export declare class UsersController {
             email: string;
             name: string | null;
             role: import("@prisma/client").$Enums.UserRole;
+            isPremium: boolean;
+            premiumExpiresAt: Date | null;
             avatarUrl: string | null;
             headline: string | null;
             bio: string | null;
@@ -31,6 +33,8 @@ export declare class UsersController {
             email: string;
             name: string | null;
             role: import("@prisma/client").$Enums.UserRole;
+            isPremium: boolean;
+            premiumExpiresAt: Date | null;
             avatarUrl: string | null;
             headline: string | null;
             bio: string | null;
@@ -48,6 +52,8 @@ export declare class UsersController {
             email: string;
             name: string | null;
             role: import("@prisma/client").$Enums.UserRole;
+            isPremium: boolean;
+            premiumExpiresAt: Date | null;
             avatarUrl: string | null;
             headline: string | null;
             bio: string | null;
@@ -67,6 +73,8 @@ export declare class UsersController {
             email: string;
             name: string | null;
             role: import("@prisma/client").$Enums.UserRole;
+            isPremium: boolean;
+            premiumExpiresAt: Date | null;
             avatarUrl: string | null;
             headline: string | null;
             bio: string | null;

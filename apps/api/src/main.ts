@@ -9,9 +9,19 @@ async function bootstrap() {
   // Set global API prefix (/api)
   app.setGlobalPrefix('api');
 
-  // Enable CORS for Next.js frontend communication
+  // Enable CORS for Next.js frontend communication with allowed origin configuration
+  const allowedOrigins = process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(',').map((url) => url.trim())
+    : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:4000'];
+
   app.enableCors({
-    origin: true,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   });
 

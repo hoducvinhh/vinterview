@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { api, CvAnalysisResponse, StartInterviewPayload } from '@/lib/api';
 import { Badge } from '@/components/ui/Badge';
+import { PremiumModal } from '@/components/PremiumModal';
 
 interface ResumeAnalyzerCardProps {
   onStartInterview: (payload: StartInterviewPayload) => Promise<void>;
@@ -13,6 +14,8 @@ export function ResumeAnalyzerCard({ onStartInterview, isStarting }: ResumeAnaly
   const [file, setFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [cvResult, setCvResult] = useState<CvAnalysisResponse['data'] | null>(null);
+
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -34,7 +37,11 @@ export function ResumeAnalyzerCard({ onStartInterview, isStarting }: ResumeAnaly
       const res = await api.analyzeResume(file);
       setCvResult(res.data);
     } catch (err: any) {
-      alert(`Lỗi khi phân tích CV: ${err.message || err}`);
+      if (err.isPremiumRequired || err.code === 'PREMIUM_REQUIRED' || err.code === 'PREMIUM_EXPIRED') {
+        setShowPremiumModal(true);
+      } else {
+        alert(`Lỗi khi phân tích CV: ${err.message || err}`);
+      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -54,18 +61,31 @@ export function ResumeAnalyzerCard({ onStartInterview, isStarting }: ResumeAnaly
 
   return (
     <div className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center text-xl">
-          📄
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center text-xl">
+            📄
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Phân Tích CV Bằng AI & Tạo Bài Phỏng Vấn
+              </h3>
+              <span className="px-2 py-0.5 text-[10px] font-extrabold text-amber-500 bg-amber-500/10 border border-amber-500/30 rounded-full uppercase tracking-wider">
+                PRO ✨
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Tải lên file PDF CV của bạn để AI tự động nhận diện kỹ năng và chọn bộ câu hỏi trúng đích
+            </p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">
-            Phân Tích CV Bằng AI & Tạo Bài Phỏng Vấn
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Tải lên file PDF CV của bạn để AI tự động nhận diện kỹ năng và chọn bộ câu hỏi trúng đích
-          </p>
-        </div>
+        <button
+          onClick={() => setShowPremiumModal(true)}
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-xl transition-colors cursor-pointer"
+        >
+          <span>👑 Mua Premium</span>
+        </button>
       </div>
 
       {/* File Upload Dropzone */}
@@ -191,6 +211,10 @@ export function ResumeAnalyzerCard({ onStartInterview, isStarting }: ResumeAnaly
         </div>
       )}
 
+      <PremiumModal
+        isOpen={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+      />
     </div>
   );
 }

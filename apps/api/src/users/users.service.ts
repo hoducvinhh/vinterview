@@ -11,6 +11,8 @@ const userSelect = {
     email: true,
     name: true,
     role: true,
+    isPremium: true,
+    premiumExpiresAt: true,
     avatarUrl: true,
     headline: true,
     bio: true,

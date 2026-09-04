@@ -21,6 +21,7 @@ const interview_module_1 = require("./interview/interview.module");
 const analytics_module_1 = require("./analytics/analytics.module");
 const users_module_1 = require("./users/users.module");
 const resume_module_1 = require("./resume/resume.module");
+const payment_module_1 = require("./payment/payment.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -38,6 +39,7 @@ exports.AppModule = AppModule = __decorate([
             analytics_module_1.AnalyticsModule,
             users_module_1.UsersModule,
             resume_module_1.ResumeModule,
+            payment_module_1.PaymentModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

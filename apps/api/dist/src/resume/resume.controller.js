@@ -16,6 +16,8 @@ exports.ResumeController = void 0;
 const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
 const resume_service_1 = require("./resume.service");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const premium_guard_1 = require("../auth/guards/premium.guard");
 let ResumeController = class ResumeController {
     resumeService;
     constructor(resumeService) {
@@ -38,6 +40,7 @@ let ResumeController = class ResumeController {
 exports.ResumeController = ResumeController;
 __decorate([
     (0, common_1.Post)('analyze'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, premium_guard_1.PremiumGuard),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
     __param(0, (0, common_1.UploadedFile)()),
     __metadata("design:type", Function),

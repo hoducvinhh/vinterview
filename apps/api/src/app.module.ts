@@ -12,6 +12,7 @@ import { InterviewModule } from './interview/interview.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { UsersModule } from './users/users.module';
 import { ResumeModule } from './resume/resume.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ResumeModule } from './resume/resume.module';
     AnalyticsModule,
     UsersModule,
     ResumeModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
