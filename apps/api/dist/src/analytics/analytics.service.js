@@ -33,18 +33,16 @@ let AnalyticsService = class AnalyticsService {
         startOfToday.setHours(0, 0, 0, 0);
         const totalViews = await this.prisma.pageView.count();
         const uniqueVisitorsResult = await this.prisma.pageView.groupBy({
-            by: ['visitorId'],
-            where: { visitorId: { not: null } },
+            by: ['visitorId', 'ip'],
         });
         const uniqueVisitors = uniqueVisitorsResult.length;
         const viewsToday = await this.prisma.pageView.count({
             where: { createdAt: { gte: startOfToday } },
         });
         const uniqueVisitorsTodayResult = await this.prisma.pageView.groupBy({
-            by: ['visitorId'],
+            by: ['visitorId', 'ip'],
             where: {
                 createdAt: { gte: startOfToday },
-                visitorId: { not: null },
             },
         });
         const uniqueVisitorsToday = uniqueVisitorsTodayResult.length;
@@ -82,13 +80,12 @@ let AnalyticsService = class AnalyticsService {
                 },
             });
             const visitorsGroup = await this.prisma.pageView.groupBy({
-                by: ['visitorId'],
+                by: ['visitorId', 'ip'],
                 where: {
                     createdAt: {
                         gte: dayStart,
                         lte: dayEnd,
                     },
-                    visitorId: { not: null },
                 },
             });
             const dateLabel = `${dayStart.getDate()}/${dayStart.getMonth() + 1}`;

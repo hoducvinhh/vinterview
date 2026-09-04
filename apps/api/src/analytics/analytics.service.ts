@@ -25,10 +25,9 @@ export class AnalyticsService {
     // 1. Total Page Views
     const totalViews = await this.prisma.pageView.count();
 
-    // 2. Unique Visitors (count distinct visitorId)
+    // 2. Unique Visitors (count distinct visitorId & IP combination)
     const uniqueVisitorsResult = await this.prisma.pageView.groupBy({
-      by: ['visitorId'],
-      where: { visitorId: { not: null } },
+      by: ['visitorId', 'ip'],
     });
     const uniqueVisitors = uniqueVisitorsResult.length;
 
@@ -39,10 +38,9 @@ export class AnalyticsService {
 
     // 4. Unique Visitors Today
     const uniqueVisitorsTodayResult = await this.prisma.pageView.groupBy({
-      by: ['visitorId'],
+      by: ['visitorId', 'ip'],
       where: {
         createdAt: { gte: startOfToday },
-        visitorId: { not: null },
       },
     });
     const uniqueVisitorsToday = uniqueVisitorsTodayResult.length;
@@ -90,13 +88,12 @@ export class AnalyticsService {
       });
 
       const visitorsGroup = await this.prisma.pageView.groupBy({
-        by: ['visitorId'],
+        by: ['visitorId', 'ip'],
         where: {
           createdAt: {
             gte: dayStart,
             lte: dayEnd,
           },
-          visitorId: { not: null },
         },
       });
 

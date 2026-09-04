@@ -5,12 +5,12 @@ export declare class AnalyticsService {
     constructor(prisma: PrismaService);
     trackPageView(dto: TrackPageViewDto, ip?: string, userAgent?: string, userId?: string): Promise<{
         id: string;
-        createdAt: Date;
-        userId: string | null;
         path: string;
         visitorId: string | null;
         ip: string | null;
         userAgent: string | null;
+        userId: string | null;
+        createdAt: Date;
     }>;
     getStats(): Promise<{
         totalViews: number;

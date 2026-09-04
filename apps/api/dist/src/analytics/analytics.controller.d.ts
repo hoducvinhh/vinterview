@@ -6,12 +6,12 @@ export declare class AnalyticsController {
     constructor(analyticsService: AnalyticsService);
     trackPageView(dto: TrackPageViewDto, req: Request): Promise<{
         id: string;
-        createdAt: Date;
-        userId: string | null;
         path: string;
         visitorId: string | null;
         ip: string | null;
         userAgent: string | null;
+        userId: string | null;
+        createdAt: Date;
     }>;
     getStats(): Promise<{
         totalViews: number;
