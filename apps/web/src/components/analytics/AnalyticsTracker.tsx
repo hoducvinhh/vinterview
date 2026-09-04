@@ -2,15 +2,24 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 
 export function AnalyticsTracker() {
   const pathname = usePathname();
+  const { user, isAdmin } = useAuth();
   const lastTrackedPath = useRef<string | null>(null);
 
   useEffect(() => {
-    // Avoid tracking exact duplicate calls on initial mount / strict mode
-    if (!pathname || lastTrackedPath.current === pathname) return;
+    // 1. Do NOT track if logged-in user is ADMIN or isAdmin flag is true
+    if (isAdmin || user?.role === 'ADMIN') {
+      return;
+    }
+
+    // 2. Do NOT track admin routes (/admin, /admin/*)
+    if (!pathname || pathname.startsWith('/admin') || lastTrackedPath.current === pathname) {
+      return;
+    }
 
     lastTrackedPath.current = pathname;
 
@@ -25,7 +34,7 @@ export function AnalyticsTracker() {
     api.trackPageView(pathname, visitorId).catch(() => {
       // Ignore background tracking error
     });
-  }, [pathname]);
+  }, [pathname, user, isAdmin]);
 
   return null;
 }
