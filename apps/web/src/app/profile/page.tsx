@@ -115,6 +115,7 @@ export default function ProfilePage() {
               src={avatarUrl || AVATAR_PRESETS[0]}
               alt={user.name || user.email}
               className="w-24 h-24 rounded-2xl bg-white/10 p-1 border-2 border-white/30 object-cover shadow-lg backdrop-blur-sm"
+              referrerPolicy="no-referrer"
             />
             <span className="absolute -bottom-1 -right-1 bg-emerald-500 border-2 border-slate-950 w-5 h-5 rounded-full" title="Online"></span>
           </div>

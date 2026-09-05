@@ -209,6 +209,7 @@ export function Header() {
                     src={user.avatarUrl}
                     alt={user.name || user.email}
                     className="w-6 h-6 rounded-md object-cover"
+                    referrerPolicy="no-referrer"
                   />
                 ) : (
                   <div className="w-6 h-6 rounded-md bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
