@@ -432,6 +432,10 @@ class ApiClient {
     return this.post<AuthResponse>('/auth/login', payload);
   }
 
+  async googleLogin(idToken: string): Promise<AuthResponse> {
+    return this.post<AuthResponse>('/auth/google', { idToken });
+  }
+
   async getMe(): Promise<{ success: boolean; data: User }> {
     return this.get<{ success: boolean; data: User }>('/auth/me');
   }

@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { GoogleAuthProvider } from '@/components/providers/GoogleAuthProvider';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'] });
@@ -110,12 +111,14 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col antialiased transition-colors duration-200`}>
         <ThemeProvider>
-          <AuthProvider>
-            <AnalyticsTracker />
-            <Header />
-            <main className="flex-1 w-full">{children}</main>
-            <Footer />
-          </AuthProvider>
+          <GoogleAuthProvider>
+            <AuthProvider>
+              <AnalyticsTracker />
+              <Header />
+              <main className="flex-1 w-full">{children}</main>
+              <Footer />
+            </AuthProvider>
+          </GoogleAuthProvider>
         </ThemeProvider>
       </body>
     </html>

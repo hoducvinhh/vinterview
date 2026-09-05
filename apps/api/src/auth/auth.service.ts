@@ -1,6 +1,7 @@
 import { Injectable, ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '@prisma/client';
 import { RegisterDto } from './dto/register.dto';
@@ -8,10 +9,14 @@ import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
+  private googleClient: OAuth2Client;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) {
+    this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+  }
 
   async register(dto: RegisterDto) {
     const existingUser = await this.prisma.user.findUnique({
@@ -65,6 +70,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password.');
     }
 
+    if (!user.password) {
+      throw new UnauthorizedException('This account was created with Google. Please use Google Sign-In.');
+    }
+
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password.');
@@ -95,6 +104,78 @@ export class AuthService {
       user: userProfile,
     };
   }
+
+  async googleLogin(idToken: string) {
+    let ticket;
+    try {
+      ticket = await this.googleClient.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+    } catch (error) {
+      throw new UnauthorizedException('Invalid Google ID token.');
+    }
+
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      throw new UnauthorizedException('Invalid payload from Google ID token.');
+    }
+
+    const { sub: googleId, email, name, picture: avatarUrl } = payload;
+    const lowerEmail = email.toLowerCase();
+
+    let user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ googleId }, { email: lowerEmail }],
+      },
+    });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email: lowerEmail,
+          name: name || 'Google User',
+          googleId,
+          avatarUrl,
+          role: UserRole.USER,
+        },
+      });
+    } else if (!user.googleId) {
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          googleId,
+          avatarUrl: user.avatarUrl || avatarUrl,
+        },
+      });
+    }
+
+    const accessToken = this.generateToken(user.id, user.email, user.role);
+
+    const userProfile = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      isPremium: user.isPremium,
+      premiumExpiresAt: user.premiumExpiresAt,
+      avatarUrl: user.avatarUrl,
+      headline: user.headline,
+      bio: user.bio,
+      githubUrl: user.githubUrl,
+      linkedinUrl: user.linkedinUrl,
+      websiteUrl: user.websiteUrl,
+      createdAt: user.createdAt,
+    };
+
+    return {
+      success: true,
+      message: 'Google login successful',
+      accessToken,
+      user: userProfile,
+    };
+  }
+
 
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({

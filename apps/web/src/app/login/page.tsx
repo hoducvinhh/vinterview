@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function LoginPage() {
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Đăng Nhập Vinterview</h1>
           <p className="text-xs text-slate-500">
-            Nhập email và mật khẩu để tiếp tục luyện phỏng vấn.
+            Nhập email và mật khẩu hoặc tiếp tục bằng tài khoản Google.
           </p>
         </div>
 
@@ -45,6 +46,14 @@ export default function LoginPage() {
             ⚠️ {error}
           </div>
         )}
+
+        <GoogleLoginButton />
+
+        <div className="relative flex py-1 items-center">
+          <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+          <span className="flex-shrink mx-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Hoặc đăng nhập bằng Email</span>
+          <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+        </div>
 
 
 

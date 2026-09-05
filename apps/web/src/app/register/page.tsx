@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function RegisterPage() {
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Tạo Tài Khoản Vinterview</h1>
           <p className="text-xs text-slate-500">
-            Bắt đầu theo dõi tiến độ và lưu trữ câu hỏi phỏng vấn của bạn.
+            Đăng ký bằng Google hoặc điền thông tin để bắt đầu luyện phỏng vấn.
           </p>
         </div>
 
@@ -46,6 +47,14 @@ export default function RegisterPage() {
             ⚠️ {error}
           </div>
         )}
+
+        <GoogleLoginButton />
+
+        <div className="relative flex py-1 items-center">
+          <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+          <span className="flex-shrink mx-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Hoặc đăng ký bằng Email</span>
+          <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
