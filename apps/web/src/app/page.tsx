@@ -1,4 +1,13 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://vinterview.vn';
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: siteUrl,
+  },
+};
 
 export default function Home() {
   const academicSubjects = [

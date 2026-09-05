@@ -7,6 +7,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { GoogleAuthProvider } from '@/components/providers/GoogleAuthProvider';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
+import { JsonLd, getWebSiteJsonLd, getOrganizationJsonLd } from '@/components/seo/JsonLd';
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'] });
 
@@ -41,9 +42,6 @@ export const metadata: Metadata = {
     email: false,
     address: false,
     telephone: false,
-  },
-  alternates: {
-    canonical: siteUrl,
   },
   openGraph: {
     title: 'Vinterview — Nền Tảng Luyện Phỏng Vấn IT & Phân Tích CV Cho Sinh Viên',
@@ -92,22 +90,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const websiteJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'Vinterview',
-    alternateName: ['Vinterview AI', 'Platform Luyện Phỏng Vấn IT'],
-    url: siteUrl,
-    description: 'Nền tảng luyện phỏng vấn IT, phỏng vấn giả lập AI theo CV và ngân hàng câu hỏi môn học dành cho sinh viên CNTT & Fresher.',
-  };
+  const websiteJsonLd = getWebSiteJsonLd(siteUrl);
+  const organizationJsonLd = getOrganizationJsonLd(siteUrl);
 
   return (
     <html lang="vi" className="dark">
       <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
-        />
+        <JsonLd data={websiteJsonLd} />
+        <JsonLd data={organizationJsonLd} />
       </head>
       <body className={`${inter.className} min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col antialiased transition-colors duration-200`}>
         <ThemeProvider>
@@ -124,3 +114,4 @@ export default function RootLayout({
     </html>
   );
 }
+

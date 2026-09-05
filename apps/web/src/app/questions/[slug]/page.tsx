@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { api, Question } from '@/lib/api';
 import { QuestionDetailClient } from '@/components/questions/QuestionDetailClient';
-import { JsonLd, getQAPageJsonLd } from '@/components/seo/JsonLd';
+import { JsonLd, getQAPageJsonLd, getBreadcrumbJsonLd } from '@/components/seo/JsonLd';
 
 interface PageProps {
   params: Promise<{
@@ -97,9 +97,16 @@ export default async function QuestionDetailPage({ params }: PageProps) {
     technology: question.technology.name,
   });
 
+  const breadcrumbJsonLd = getBreadcrumbJsonLd([
+    { name: 'Trang chủ', url: baseUrl },
+    { name: 'Ngân hàng câu hỏi', url: `${baseUrl}/questions` },
+    { name: question.title, url: `${baseUrl}/questions/${question.slug}` },
+  ]);
+
   return (
     <>
       <JsonLd data={qaJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       <QuestionDetailClient question={question} relatedQuestions={relatedQuestions} />
     </>
   );
