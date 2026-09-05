@@ -140,12 +140,13 @@ export class AuthService {
           role: UserRole.USER,
         },
       });
-    } else if (!user.googleId) {
+    } else {
       user = await this.prisma.user.update({
         where: { id: user.id },
         data: {
           googleId,
-          avatarUrl: user.avatarUrl || avatarUrl,
+          avatarUrl: avatarUrl || user.avatarUrl,
+          name: user.name || name,
         },
       });
     }
